@@ -43,6 +43,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\Area.cs" />
+    <Compile Include="Models\Game.cs" />
+    <Compile Include="Models\PointOfInterest.cs" />
+    <Compile Include="Models\Role.cs" />
+    <Compile Include="Models\Route.cs" />
+    <Compile Include="Models\RoutePoint.cs" />
+    <Compile Include="Models\User.cs" />
+    <Compile Include="Models\UserQuest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
