@@ -8,6 +8,7 @@ namespace ConsoleAppBENTExNL.Models
 {
 	internal class PointOfInterest
 	{
+		//this is also a comments
 		private int _id;
 		private string _name;
 		private string _description;
