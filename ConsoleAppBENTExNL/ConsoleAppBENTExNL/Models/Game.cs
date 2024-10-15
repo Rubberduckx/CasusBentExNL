@@ -8,7 +8,7 @@ namespace ConsoleAppBENTExNL.Models
 {
 	internal class Game
 	{
-		//this is a comment
+		//this is a comment again
 		public Game()
 		{
 			throw new NotImplementedException();
