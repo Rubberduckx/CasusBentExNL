@@ -8,18 +8,18 @@ namespace ConsoleAppBENTExNL.Models
 {
 	internal class Route
 	{
-		private int _id;
-		private string _name;
-		private Area _areaId;
-		private List<RoutePoint> _routePoints;
-		private List<Game> _games;
+		private int id;
+		private string name;
+		private Area areaId;
+		private List<RoutePoint> routePoints;
+		private List<Game> games;
 
-		public static Route CreateRoute()
+		public void CreateRoute()
 		{
 			throw new NotImplementedException();
 		}
 
-		public static void DeleteRoute(Route route)
+		public void DeleteRoute()
 		{
 			throw new NotImplementedException();
 		}
