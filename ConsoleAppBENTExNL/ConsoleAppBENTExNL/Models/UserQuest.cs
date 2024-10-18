@@ -16,10 +16,10 @@ namespace ConsoleAppBENTExNL.Models
 
 		public UserQuest(int _id, bool _isCorrect, string _givenAnswer, User _userId /*, Question _questionId*/)
 		{
-			_id = id;
-			_isCorrect = isCorrect;
-			_givenAnswer = givenAnswer;
-			_userId = userId;
+			id = _id;
+			isCorrect = _isCorrect;
+			givenAnswer = _givenAnswer;
+			userId = _userId;
 			//_questionId = questionId
 		}
 
