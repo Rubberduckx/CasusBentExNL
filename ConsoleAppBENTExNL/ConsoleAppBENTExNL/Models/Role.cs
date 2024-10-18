@@ -17,10 +17,10 @@ namespace ConsoleAppBENTExNL.Models
 
 		public Role(int _id, string _type, string _description, string _permission)
 		{
-			_id = id;
-			_type = type;
-			_description = description;
-			_permission = permission;
+			id = _id;
+			type = _type;
+			description = _description;
+			permission = _permission;
 		}
 
 		public void CreateUser()

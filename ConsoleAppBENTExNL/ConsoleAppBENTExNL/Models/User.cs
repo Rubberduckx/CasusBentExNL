@@ -16,76 +16,67 @@ namespace ConsoleAppBENTExNL.Models
 		private string password;
 		private int xpLevel;
 		private int xp;
-		// private List<Observation> observations = new List<Observations>();
+        private int routeId;
+        //private Route routeId;
+		//private List<Observation> observations = new List<Observations>();
 		private List<Role> roles = new List<Role>();
 		private List<UserQuest> userquests = new List<UserQuest>();
 
-		public User(int _id, string _name, DateTime _dateofBirth, string _email, string _password,
-					int _xplevel, int _xp)
+		public User()
+        {
+
+        }
+
+        public User(string _name, DateTime _dateofBirth, string _email, string _password,
+                    int _xpLevel, int _xp, int _routeId)
+        {
+            name = _name;
+            dateofBirth = _dateofBirth;
+            email = _email;
+            password = _password;
+            xpLevel = _xpLevel;
+            xp = _xp;
+            routeId = _routeId;
+        }
+
+        public User(int _id, string _name, DateTime _dateofBirth, string _email, string _password,
+					int _xpLevel, int _xp, int _routeId)
 		{
-			_id = id;
-			_name = name;
-			_dateofBirth = dateofBirth;
-			_email = email;
-			_password = password;
-			_xplevel = xpLevel;
-			_xp = xp;
-		}
+			id = _id;
+			name = _name;
+			dateofBirth = _dateofBirth;
+			email = _email;
+			password = _password;
+			xpLevel = _xpLevel;
+			xp = _xp;
+            routeId = _routeId;
+        }
 
         // Properties voor accessen private variabelen
-        public int Id
-        {
-            get { return id; }
-            set { id = value; }
-        }
 
-        public string Name
-        {
-            get { return name; }
-            set { name = value; }
-        }
+        public int GetId() => id;
+        public void SetId(int value) => id = value;
 
-        public DateTime DateOfBirth
-        {
-            get { return dateofBirth; }
-            set { dateofBirth = value; }
-        }
+        public string GetName() => name;
+        public void SetName(string value) => name = value;
 
-        public string Email
-        {
-            get { return email; }
-            set { email = value; }
-        }
+        public DateTime GetDateOfBirth() => dateofBirth;
+        public void SetDateOfBirth(DateTime value) => dateofBirth = value;
 
-        public string Password
-        {
-            get { return password; }
-            set { password = value; }
-        }
+        public string GetEmail() => email;
+        public void SetEmail(string value) => email = value;
 
-        public int xplevel
-        {
-            get { return xpLevel; }
-            set { xpLevel = value; }
-        }
+        public string GetPassword() => password;
+        public void SetPassword(string value) => password = value;
 
-        public int Xp
-        {
-            get { return xp; }
-            set { xp = value; }
-        }
+        public int GetXpLevel() => xpLevel;
+        public void SetXpLevel(int value) => xpLevel = value;
 
-        public List<Role> Roles
-        {
-            get { return roles; }
-            set { roles = value; }
-        }
+        public int GetXp() => xp;
+        public void SetXp(int value) => xp = value;
 
-        public List<UserQuest> UserQuests
-        {
-            get { return userquests; }
-            set { userquests = value; }
-        }
+        public int GetRouteId() => routeId;
+        public void SetRouteId(int value) => routeId = value;
 
 
         public void CreateUser(User user)
@@ -106,10 +97,10 @@ namespace ConsoleAppBENTExNL.Models
             sqldal.UpdateUser(user);
         }
 
-		public void GetUser()
+		public List<User> GetUser()
 		{
             SQLDAL sqldal = new SQLDAL();
-            sqldal.GetUser();
+            return sqldal.GetUser();
         }
 
 		public void GetAnswers()
