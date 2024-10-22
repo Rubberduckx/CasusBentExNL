@@ -25,7 +25,8 @@ namespace ConsoleAppBENTExNL.DAL
             // Create a new SqlConnection object
             connection = new SqlConnection(connectionString);
         }
-
+        //Hebben we niet misschien een apparte GetUser(int id) nodig ook?
+        //En dan dit GetUsers() noemen aangezien het alle users returnt.
         public void GetUser()
         {
             connection.Open();
@@ -92,6 +93,59 @@ namespace ConsoleAppBENTExNL.DAL
             connection.Close();
         }
 
+        public PointOfInterest GetPOI(int id) {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("SELECT * FROM POI WHERE id = @id", connection);
+            command.Parameters.AddWithValue("@id", id);
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                RoutePoint routePoint = GetRoutePoint(reader.GetInt32(4));
+                PointOfInterest POI = new PointOfInterest(id, reader.GetString(1), reader.GetString(2), reader.GetString(3), routePoint);
+                return POI;
+            }
+
+            throw new ArgumentException("No PointOfInterest found at given id.", id.ToString());
+        }
+        
+        public RoutePoint GetRoutePoint(int id)
+        {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("SELECT * FROM RoutePoint WHERE id = @id", connection);
+            command.Parameters.AddWithValue("@id", id);
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                RoutePoint routePoint = new RoutePoint(id, reader.GetString(1), reader.GetFloat(2), reader.GetFloat(3));
+                return routePoint;
+            }
+
+            throw new ArgumentException("No RoutePoint found at given id.", id.ToString());
+        }
+
+        public Route GetRoute(int id)
+        {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("SELECT * FROM Route WHERE id = @id", connection);
+            command.Parameters.AddWithValue("@id", id);
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                Area area = GetArea(reader.GetInt32(2));
+                Route route = new Route(id, reader.GetString(1), area);
+                return route;
+            }
+
+            throw new ArgumentException("No Route found at given id.", id.ToString());
+        }
+
+        public Area GetArea(int id)
+        {
+            throw new NotImplementedException();
+        }
 
     }
 }

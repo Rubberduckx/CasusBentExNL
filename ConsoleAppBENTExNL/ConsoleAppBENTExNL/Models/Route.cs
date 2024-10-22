@@ -10,11 +10,17 @@ namespace ConsoleAppBENTExNL.Models
 	{
 		private int id;
 		private string name;
-		private Area areaId;
+		private Area area;
 		private List<RoutePoint> routePoints;
 		private List<Game> games;
 
-		public void CreateRoute()
+        public Route(int id, string name, Area area)
+        {
+            this.id = id;
+			this.name = name;
+			this.area = area;
+        }
+        public void CreateRoute()
 		{
 			throw new NotImplementedException();
 		}
