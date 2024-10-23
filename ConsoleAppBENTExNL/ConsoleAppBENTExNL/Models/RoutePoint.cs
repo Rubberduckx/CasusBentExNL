@@ -12,10 +12,18 @@ namespace ConsoleAppBENTExNL.Models
 		private string name;
 		private double latitude;
 		private double longitude;
-		private List<PointOfInterest> pointOfInterests;
+		private List<PointOfInterest> pointsOfInterest;
 		private List<Route> routes;
 
-		public void CreateRoutePoint()
+        public RoutePoint(int id, string name, double latitude, double longitude)
+        {
+            this.id = id;
+			this.name = name;
+			this.latitude = latitude;
+			this.longitude = longitude;
+        }
+
+        public void CreateRoutePoint()
 		{
 			throw new NotImplementedException();
 		}
@@ -38,6 +46,11 @@ namespace ConsoleAppBENTExNL.Models
 		public void GetPointOfInterest(int pointOfInterestId = 0)
 		{
 			throw new NotImplementedException();
+		}
+
+		public void AddPointOfInterest(PointOfInterest pointOfInterest)
+		{
+			pointsOfInterest.Add(pointOfInterest);
 		}
 	}
 }

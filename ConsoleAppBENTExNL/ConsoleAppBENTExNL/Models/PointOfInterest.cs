@@ -15,7 +15,16 @@ namespace ConsoleAppBENTExNL.Models
 		private string image;
 		private RoutePoint routePoint;
 
-		public PointOfInterest CreatePOI()
+        public PointOfInterest(int id, string name, string description, string image, RoutePoint routePoint)
+        {
+			this.id = id;
+			this.name = name;
+			this.description = description;
+			this.image = image;
+			this.routePoint = routePoint;
+        }
+
+        public PointOfInterest CreatePOI()
 		{
 			throw new NotImplementedException();
 		}
