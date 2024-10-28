@@ -20,6 +20,11 @@ namespace ConsoleAppBENTExNL.Models
 			this.name = name;
 			this.area = area;
         }
+
+		public int GetId() => id;
+		public string GetName() => name;
+		public Area GetArea() => area;
+
         public void CreateRoute()
 		{
 			throw new NotImplementedException();

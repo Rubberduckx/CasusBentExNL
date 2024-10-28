@@ -1,6 +1,7 @@
 ﻿using ConsoleAppBENTExNL.DAL;
 using System;
 using System.Collections.Generic;
+using System.Data.Sql;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,9 +17,8 @@ namespace ConsoleAppBENTExNL.Models
 		private string password;
 		private int xpLevel;
 		private int xp;
-        private int routeId;
-        //private Route routeId;
-		//private List<Observation> observations = new List<Observations>();
+        private Route route;
+		private List<Observation> observations = new List<Observation>();
 		private List<Role> roles = new List<Role>();
 		private List<UserQuest> userquests = new List<UserQuest>();
 
@@ -28,7 +28,7 @@ namespace ConsoleAppBENTExNL.Models
         }
 
         public User(string _name, DateTime _dateofBirth, string _email, string _password,
-                    int _xpLevel, int _xp, int _routeId)
+                    int _xpLevel, int _xp, Route _route = null)
         {
             name = _name;
             dateofBirth = _dateofBirth;
@@ -36,11 +36,11 @@ namespace ConsoleAppBENTExNL.Models
             password = _password;
             xpLevel = _xpLevel;
             xp = _xp;
-            routeId = _routeId;
+            route = _route;
         }
 
         public User(int _id, string _name, DateTime _dateofBirth, string _email, string _password,
-					int _xpLevel, int _xp, int _routeId)
+					int _xpLevel, int _xp, Route _route = null)
 		{
 			id = _id;
 			name = _name;
@@ -49,7 +49,27 @@ namespace ConsoleAppBENTExNL.Models
 			password = _password;
 			xpLevel = _xpLevel;
 			xp = _xp;
-            routeId = _routeId;
+            route = _route;
+        }
+
+        public Observation CreateObservation(double lat, double lng, string image, string description, Species species, int areaId)
+        {
+            Observation observation = SQLDAL.GetSingleton().CreateObservation(lat, lng, image, description, species.GetId(), this, areaId);
+            return observation;
+        }
+
+        public void DeleteObservation(int id)
+        {
+            SQLDAL DAL = SQLDAL.GetSingleton();
+            Observation observation = DAL.GetObservation(id);
+            if (observation.GetUser() == this)
+            {
+                DAL.DeleteObservation(id);
+            } else
+            {
+                throw new UnauthorizedAccessException();
+            }
+
         }
 
         // Properties voor accessen private variabelen
@@ -75,31 +95,31 @@ namespace ConsoleAppBENTExNL.Models
         public int GetXp() => xp;
         public void SetXp(int value) => xp = value;
 
-        public int GetRouteId() => routeId;
-        public void SetRouteId(int value) => routeId = value;
+        public Route GetRoute() => route;
+        public void SetRoute(Route value) => route = value;
 
 
         public void CreateUser(User user)
 		{
-            SQLDAL sqldal = new SQLDAL();
+            SQLDAL sqldal = SQLDAL.GetSingleton();
             sqldal.CreateUser(user);
         }
 
 		public void DeleteUser(int id)
 		{
-            SQLDAL sqldal = new SQLDAL();
+            SQLDAL sqldal = SQLDAL.GetSingleton();
             sqldal.DeleteUser(id);
         }
 
 		public void UpdateUser(User user)
 		{
-            SQLDAL sqldal = new SQLDAL();
+            SQLDAL sqldal = SQLDAL.GetSingleton();
             sqldal.UpdateUser(user);
         }
 
 		public List<User> GetUser()
 		{
-            SQLDAL sqldal = new SQLDAL();
+            SQLDAL sqldal = SQLDAL.GetSingleton();
             return sqldal.GetUser();
         }
 
