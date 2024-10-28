@@ -15,7 +15,14 @@ namespace ConsoleAppBENTExNL.DAL
         public string connectionString;
         public List<User> users;
 
-        public SQLDAL()
+        private static readonly SQLDAL _singleton = new SQLDAL();
+
+        public static SQLDAL GetSingleton()
+        {
+            return _singleton;
+        }
+
+        private SQLDAL()
         {
             users = new List<User>();
 
@@ -41,9 +48,9 @@ namespace ConsoleAppBENTExNL.DAL
                 string password = reader.GetString(4);
                 int xpLevel = reader.GetInt32(5);
                 int xp = reader.GetInt32(6);
-                int routeId = reader.GetInt32(7);
+                Route route = GetRoute(reader.GetInt32(7));
 
-                users.Add(new User(id, name, dateofBirth, email, password, xpLevel, xp, routeId));
+                users.Add(new User(id, name, dateofBirth, email, password, xpLevel, xp, route));
             }
             connection.Close();
             return users;
@@ -61,7 +68,7 @@ namespace ConsoleAppBENTExNL.DAL
             command.Parameters.AddWithValue("@password", user.GetPassword());
             command.Parameters.AddWithValue("@xplevel", user.GetXpLevel());
             command.Parameters.AddWithValue("@xp", user.GetXp());
-            command.Parameters.AddWithValue("@routeId", user.GetRouteId());
+            command.Parameters.AddWithValue("@routeId", user.GetRoute().GetId());
 
             command.ExecuteNonQuery();
 
@@ -83,7 +90,7 @@ namespace ConsoleAppBENTExNL.DAL
             command.Parameters.AddWithValue("@password", user.GetPassword());
             command.Parameters.AddWithValue("@xplevel", user.GetXpLevel());
             command.Parameters.AddWithValue("@xp", user.GetXp());
-            command.Parameters.AddWithValue("@routeId", user.GetRouteId());
+            command.Parameters.AddWithValue("@routeId", user.GetRoute().GetId());
 
             command.ExecuteNonQuery();
             connection.Close();
@@ -106,8 +113,7 @@ namespace ConsoleAppBENTExNL.DAL
             SqlDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                RoutePoint routePoint = GetRoutePoint(reader.GetInt32(4));
-                PointOfInterest POI = new PointOfInterest(id, reader.GetString(1), reader.GetString(2), reader.GetString(3), routePoint);
+                PointOfInterest POI = new PointOfInterest(id, reader.GetString(1), reader.GetString(2), reader.GetString(3));
                 return POI;
             }
 
@@ -150,6 +156,30 @@ namespace ConsoleAppBENTExNL.DAL
         public Area GetArea(int id)
         {
             throw new NotImplementedException();
+        }
+
+        public Observation CreateObservation(double lat, double lng, string image, string description, int speciesId, User user, int areaId)
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("INSERT INTO [Observation] (lat, long, image, description, speciesId, userId, areaId) " +
+        "VALUES (@lat, @long, @image, @description, @speciesId, @userId, @areaId); " +
+        "SELECT SCOPE_IDENTITY();", connection);
+
+            command.Parameters.AddWithValue("@lat", lat);
+            command.Parameters.AddWithValue("@long", lng);
+            command.Parameters.AddWithValue("@image", image);
+            command.Parameters.AddWithValue("@description", description);
+            command.Parameters.AddWithValue("@speciesId", speciesId);
+            command.Parameters.AddWithValue("@userId", user.GetId());
+            command.Parameters.AddWithValue("@areaId", areaId);
+
+            //TODO: Test if this works properly.
+            int id = Convert.ToInt32(command.ExecuteScalar());
+
+            connection.Close();
+
+            Observation observation = new Observation(id, lat, lng, null, user, GetArea(areaId), image, description);
+            return observation;
         }
 
     }
