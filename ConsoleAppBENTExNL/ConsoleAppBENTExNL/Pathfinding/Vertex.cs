@@ -9,36 +9,36 @@ namespace ConsoleAppBENTExNL.Pathfinding
     internal class Vertex
     {
         public string name;
-        private Dictionary<Vertex, int> children = new Dictionary<Vertex, int>();
+        private Dictionary<Vertex, int> neighbors = new Dictionary<Vertex, int>();
 
         public Vertex(string name)
         {
             this.name = name;
         }
 
-        public void AddChild(Vertex child, int distance)
+        public void AddNeighbor(Vertex neighbor, int distance)
         {
-            children.Add(child, distance);
+            neighbors.Add(neighbor, distance);
         }
 
-        public void RemoveChild(Vertex child)
+        public void RemoveNeighbors(Vertex neighbor)
         {
-            children.Remove(child);
+            neighbors.Remove(neighbor);
         }
 
-        public Dictionary<Vertex, int> GetChildren()
+        public Dictionary<Vertex, int> GetNeighbors()
         {
-            return children;
+            return neighbors;
         }
 
-        public int GetDistanceToChild(Vertex child)
+        public int GetDistanceToNeighbor(Vertex neighbor)
         {
-            return children[child];
+            return neighbors[neighbor];
         }
 
-        public Vertex GetClosestChild()
+        public Vertex GetClosestNeighbor()
         {
-            return children.OrderBy(c => c.Value).FirstOrDefault().Key;
+            return neighbors.OrderBy(c => c.Value).FirstOrDefault().Key;
         }
     }
 }

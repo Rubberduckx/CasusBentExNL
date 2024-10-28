@@ -40,7 +40,7 @@ namespace ConsoleAppBENTExNL.Models
         }
 
         public User(int _id, string _name, DateTime _dateofBirth, string _email, string _password,
-					int _xpLevel, int _xp, Route _route)
+					int _xpLevel, int _xp, Route _route = null)
 		{
 			id = _id;
 			name = _name;

@@ -56,6 +56,9 @@
     <Compile Include="Models\Species.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserQuest.cs" />
+    <Compile Include="Pathfinding\Dijkstra.cs" />
+    <Compile Include="Pathfinding\Graph.cs" />
+    <Compile Include="Pathfinding\Vertex.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

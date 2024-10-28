@@ -1,4 +1,5 @@
 ﻿using ConsoleAppBENTExNL.Models;
+using ConsoleAppBENTExNL.Pathfinding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,10 @@ namespace ConsoleAppBENTExNL
     {
         static void Main(string[] args)
         {
+            // TEMPORARY CODE START
+            DijkstraTest();
+            // TEMPORARY CODE END
+
             User user = new User();
             bool isRunning = true;
 
@@ -47,9 +52,8 @@ namespace ConsoleAppBENTExNL
 
                     int xpLevel = 10;
                     int xp = 50;
-                    int routeId = 1;
 
-                    User userToAdd = new User(name, dateofBirth, email, password, xpLevel, xp, routeId);
+                    User userToAdd = new User(name, dateofBirth, email, password, xpLevel, xp);
 
                     user.CreateUser(userToAdd);
 
@@ -88,9 +92,8 @@ namespace ConsoleAppBENTExNL
 
                     int xpLevel = 10;
                     int xp = 50;
-                    int routeId = 1;
 
-                    User userToUpdate = new User(id, name, dateofBirth, email, password, xpLevel, xp, routeId);
+                    User userToUpdate = new User(id, name, dateofBirth, email, password, xpLevel, xp);
 
                     user.UpdateUser(userToUpdate);
 
@@ -147,6 +150,43 @@ namespace ConsoleAppBENTExNL
                     Console.ReadKey();
                 }
             }
+        }
+
+        public static void DijkstraTest()
+        {
+            Graph graph = new Graph();
+            Vertex a = new Vertex("A");
+            Vertex b = new Vertex("B");
+            Vertex c = new Vertex("C");
+            Vertex d = new Vertex("D");
+            Vertex e = new Vertex("E");
+
+            // Add vertices to the graph
+            graph.AddVertex(a);
+            graph.AddVertex(b);
+            graph.AddVertex(c);
+            graph.AddVertex(d);
+            graph.AddVertex(e);
+
+            // Define edges with distances
+            a.AddNeighbor(b, 6);
+            a.AddNeighbor(d, 1);
+            b.AddNeighbor(c, 5);
+            b.AddNeighbor(d, 2);
+            c.AddNeighbor(e, 5);
+            d.AddNeighbor(e, 1);
+
+            // Run Dijkstra's algorithm from A to E
+            Stack<Vertex> path = Dijkstra.ShortestRoute(graph, a, e);
+
+            // Print the path
+            Console.WriteLine("Shortest path from A to E:");
+            while (path.Count > 0)
+            {
+                Console.Write(path.Pop().name + (path.Count > 0 ? " -> " : "\n"));
+            }
+
+            Console.ReadKey();
         }
     }
 }
