@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ConsoleAppBENTExNL.DAL
 {
@@ -153,7 +154,13 @@ namespace ConsoleAppBENTExNL.DAL
             throw new ArgumentException("No Route found at given id.", id.ToString());
         }
 
+        //TODO: IMPLEMENT
         public Area GetArea(int id)
+        {
+            throw new NotImplementedException();
+        }
+        //TODO: IMPLEMENT
+        public Species GetSpecies(int id)
         {
             throw new NotImplementedException();
         }
@@ -180,6 +187,39 @@ namespace ConsoleAppBENTExNL.DAL
 
             Observation observation = new Observation(id, lat, lng, null, user, GetArea(areaId), image, description);
             return observation;
+        }
+
+        public Observation GetObservation(int id)
+        {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("SELECT * FROM Observation WHERE id = @id", connection);
+            SqlDataReader reader = command.ExecuteReader();
+
+            Observation observation = null;
+
+            while (reader.Read())
+            {
+                double lat = reader.GetDouble(1);
+                double lng = reader.GetDouble(2);
+                Species species = GetSpecies(reader.GetInt32(3));
+                User user = GetUser()[reader.GetInt32(4)];
+                Area area = GetArea(reader.GetInt32(5));
+                string image = reader.GetString(6);
+                string description = reader.GetString(7);
+                observation = new Observation(id, lat, lng, species, user, area, image, description);
+            }
+            connection.Close();
+            
+            return observation;
+        }
+        public void DeleteObservation(int id)
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("DELETE FROM [Observation] WHERE id = @id", connection);
+            command.Parameters.AddWithValue("@id", id);
+            command.ExecuteNonQuery();
+            connection.Close();
         }
 
     }

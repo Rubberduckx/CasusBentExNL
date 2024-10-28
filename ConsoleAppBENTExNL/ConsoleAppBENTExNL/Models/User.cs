@@ -1,6 +1,7 @@
 ﻿using ConsoleAppBENTExNL.DAL;
 using System;
 using System.Collections.Generic;
+using System.Data.Sql;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,9 +52,24 @@ namespace ConsoleAppBENTExNL.Models
             route = _route;
         }
 
-        public Observation CreateObservation()
+        public Observation CreateObservation(double lat, double lng, string image, string description, Species species, int areaId)
         {
-            
+            Observation observation = SQLDAL.GetSingleton().CreateObservation(lat, lng, image, description, species.GetId(), this, areaId);
+            return observation;
+        }
+
+        public void DeleteObservation(int id)
+        {
+            SQLDAL DAL = SQLDAL.GetSingleton();
+            Observation observation = DAL.GetObservation(id);
+            if (observation.GetUser() == this)
+            {
+                DAL.DeleteObservation(id);
+            } else
+            {
+                throw new UnauthorizedAccessException();
+            }
+
         }
 
         // Properties voor accessen private variabelen

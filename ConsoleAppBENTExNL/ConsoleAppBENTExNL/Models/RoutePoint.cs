@@ -13,7 +13,6 @@ namespace ConsoleAppBENTExNL.Models
 		private double latitude;
 		private double longitude;
 		private List<PointOfInterest> pointsOfInterest;
-		private List<Route> routes;
 
         public RoutePoint(int id, string name, double latitude, double longitude)
         {
