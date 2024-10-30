@@ -1,4 +1,5 @@
 ﻿using ConsoleAppBENTExNL.Models;
+using ConsoleAppBENTExNL.Pathfinding;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace ConsoleAppBENTExNL.DAL
@@ -14,10 +16,22 @@ namespace ConsoleAppBENTExNL.DAL
     {
         public SqlConnection connection;
         public string connectionString;
+
         public List<User> users;
+        public List<Role> roles;
 
+        // Deze code implementeert een singleton-patroon voor de SQLDAL-klasse.  
+        // De SQLDAL-klasse is verantwoordelijk voor databasebewerkingen met betrekking tot gebruikers,
+        // rollen, routes, points of interest en observaties.
+
+        // Het singleton-patroon zorgt ervoor dat er slechts één instantie van de SQLDAL-klasse wordt gemaakt en gebruikt
+        // in de hele applicatie.  
+
+        // Waarom is dit static?
+        // Graag even uitleggen voor verdeging
         private static readonly SQLDAL _singleton = new SQLDAL();
-
+        // Waarom is dit static?
+        // Graag even uitleggen voor verdeging
         public static SQLDAL GetSingleton()
         {
             return _singleton;
@@ -26,6 +40,7 @@ namespace ConsoleAppBENTExNL.DAL
         private SQLDAL()
         {
             users = new List<User>();
+            roles = new List<Role>();
 
             //connectionString
             connectionString = "*";
@@ -33,6 +48,8 @@ namespace ConsoleAppBENTExNL.DAL
             // Create a new SqlConnection object
             connection = new SqlConnection(connectionString);
         }
+
+        // USER
         public List<User> GetUser()
         {
             connection.Open();
@@ -106,6 +123,7 @@ namespace ConsoleAppBENTExNL.DAL
             connection.Close();
         }
 
+        // POI
         public PointOfInterest GetPOI(int id) {
             connection.Open();
 
@@ -120,7 +138,9 @@ namespace ConsoleAppBENTExNL.DAL
 
             throw new ArgumentException("No PointOfInterest found at given id.", id.ToString());
         }
-        
+
+        // ROUTE
+
         public RoutePoint GetRoutePoint(int id)
         {
             connection.Open();
@@ -165,6 +185,7 @@ namespace ConsoleAppBENTExNL.DAL
             throw new NotImplementedException();
         }
 
+        // OBSERVATION
         public Observation CreateObservation(double lat, double lng, string image, string description, int speciesId, User user, int areaId)
         {
             connection.Open();
@@ -218,6 +239,92 @@ namespace ConsoleAppBENTExNL.DAL
             connection.Open();
             SqlCommand command = new SqlCommand("DELETE FROM [Observation] WHERE id = @id", connection);
             command.Parameters.AddWithValue("@id", id);
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+
+        // ROLE
+
+        public List<Role> GetAllRoles()
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("SELECT * FROM Role", connection);
+            SqlDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                int id = reader.GetInt32(0);
+                string type = reader.GetString(1);
+                string description = reader.GetString(2);
+                string permissions = reader.GetString(3);
+                roles.Add(new Role(id, type, description, permissions));
+            }
+
+            connection.Close();
+
+            return roles;
+        }
+
+        public Role GetRoleById(int id)
+        {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("SELECT * FROM Role WHERE id = @id", connection);
+            command.Parameters.AddWithValue("@id", id);
+            SqlDataReader reader = command.ExecuteReader();
+            
+            while (reader.Read())
+            {
+                id = reader.GetInt32(0);
+                string type = reader.GetString(1);
+                string description = reader.GetString(2);
+                string permissions = reader.GetString(3);
+                Role role = new Role(id, type, description, permissions);
+                
+                return role;
+            }
+
+            connection.Close();
+
+            throw new ArgumentException("No Role found at given id.", id.ToString());
+        }
+
+        public void CreateRole(Role role)
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("INSERT INTO [Role] (type, description, permissions) " +
+                "VALUES (@type, @description, @permissions)", connection);
+
+            command.Parameters.AddWithValue("@type", role.GetTypeRole());
+            command.Parameters.AddWithValue("@description", role.GetDescription());
+            command.Parameters.AddWithValue("@permissions", role.GetPermission());
+
+            command.ExecuteNonQuery();
+
+            connection.Close();
+        }
+
+        public void DeleteRole(int id) 
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("DELETE FROM [Role] WHERE id = @id", connection);
+            command.Parameters.AddWithValue("@id", id);
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+
+        public void UpdateRole(Role role)
+        {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("UPDATE [Role] SET type = @type, description = @description, " +
+                "permissions = @permissions WHERE id = @id", connection);
+
+            command.Parameters.AddWithValue("@id", role.GetId());
+            command.Parameters.AddWithValue("@type", role.GetTypeRole());
+            command.Parameters.AddWithValue("@description", role.GetDescription());
+            command.Parameters.AddWithValue("@permissions", role.GetPermission());
+
             command.ExecuteNonQuery();
             connection.Close();
         }
