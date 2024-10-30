@@ -52,9 +52,11 @@ namespace ConsoleAppBENTExNL.Models
             route = _route;
         }
 
-        public Observation CreateObservation(double lat, double lng, string image, string description, Species species, int areaId)
+        public Observation CreateObservation(double lat, double lng, string image, string description, 
+                                                                            Species species, int areaId)
         {
-            Observation observation = SQLDAL.GetSingleton().CreateObservation(lat, lng, image, description, species.GetId(), this, areaId);
+            Observation observation = SQLDAL.GetSingleton().CreateObservation(lat, lng, image, description, 
+                                                                                species.GetId(), this, areaId);
             return observation;
         }
 
@@ -62,10 +64,13 @@ namespace ConsoleAppBENTExNL.Models
         {
             SQLDAL DAL = SQLDAL.GetSingleton();
             Observation observation = DAL.GetObservation(id);
+
             if (observation.GetUser() == this)
             {
                 DAL.DeleteObservation(id);
-            } else
+            }
+            
+            else
             {
                 throw new UnauthorizedAccessException();
             }
@@ -75,28 +80,20 @@ namespace ConsoleAppBENTExNL.Models
         // Properties voor accessen private variabelen
 
         public int GetId() => id;
-        public void SetId(int value) => id = value;
 
         public string GetName() => name;
-        public void SetName(string value) => name = value;
 
         public DateTime GetDateOfBirth() => dateofBirth;
-        public void SetDateOfBirth(DateTime value) => dateofBirth = value;
 
         public string GetEmail() => email;
-        public void SetEmail(string value) => email = value;
 
         public string GetPassword() => password;
-        public void SetPassword(string value) => password = value;
-
+ 
         public int GetXpLevel() => xpLevel;
-        public void SetXpLevel(int value) => xpLevel = value;
 
         public int GetXp() => xp;
-        public void SetXp(int value) => xp = value;
 
         public Route GetRoute() => route;
-        public void SetRoute(Route value) => route = value;
 
 
         public void CreateUser(User user)
