@@ -9,13 +9,20 @@ namespace ConsoleAppBENTExNL.Models
 	internal class PointOfInterest
 	{
 		//this is also a comments
-		private int _id;
-		private string _name;
-		private string _description;
-		private string _image;
-		private RoutePoint _routePoint;
+		private int id;
+		private string name;
+		private string description;
+		private string image;
 
-		public static PointOfInterest CreatePOI()
+        public PointOfInterest(int id, string name, string description, string image)
+        {
+			this.id = id;
+			this.name = name;
+			this.description = description;
+			this.image = image;
+		}
+
+        public PointOfInterest CreatePOI()
 		{
 			throw new NotImplementedException();
 		}
@@ -25,12 +32,12 @@ namespace ConsoleAppBENTExNL.Models
 			throw new NotImplementedException();
 		}
 
-		public static void DeletePOI(PointOfInterest poi)
+		public void DeletePOI(PointOfInterest poi)
 		{
 			throw new NotImplementedException();
 		}
 
-		public static void UpdatePOI(PointOfInterest poi)
+		public void UpdatePOI(PointOfInterest poi)
 		{
 			throw new NotImplementedException();
 		}

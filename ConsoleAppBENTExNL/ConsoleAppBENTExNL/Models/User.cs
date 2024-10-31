@@ -1,6 +1,7 @@
 ﻿using ConsoleAppBENTExNL.DAL;
 using System;
 using System.Collections.Generic;
+using System.Data.Sql;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,100 +17,82 @@ namespace ConsoleAppBENTExNL.Models
 		private string password;
 		private int xpLevel;
 		private int xp;
-		// private List<Observation> observations = new List<Observations>();
+        private Route route;
+		private List<Observation> observations = new List<Observation>();
 		private List<Role> roles = new List<Role>();
 		private List<UserQuest> userquests = new List<UserQuest>();
 
-		public User(int _id, string _name, DateTime _dateofBirth, string _email, string _password,
-					int _xplevel, int _xp)
+		public User()
+        {
+
+        }
+
+        public User(string _name, DateTime _dateofBirth, string _email, string _password,
+                    int _xpLevel, int _xp, Route _route = null)
+        {
+            name = _name;
+            dateofBirth = _dateofBirth;
+            email = _email;
+            password = _password;
+            xpLevel = _xpLevel;
+            xp = _xp;
+            route = _route;
+        }
+
+        public User(int _id, string _name, DateTime _dateofBirth, string _email, string _password,
+					int _xpLevel, int _xp, Route _route = null)
 		{
-			_id = id;
-			_name = name;
-			_dateofBirth = dateofBirth;
-			_email = email;
-			_password = password;
-			_xplevel = xpLevel;
-			_xp = xp;
-		}
+			id = _id;
+			name = _name;
+			dateofBirth = _dateofBirth;
+			email = _email;
+			password = _password;
+			xpLevel = _xpLevel;
+			xp = _xp;
+            route = _route;
+        }
 
         // Properties voor accessen private variabelen
-        public int Id
-        {
-            get { return id; }
-            set { id = value; }
-        }
 
-        public string Name
-        {
-            get { return name; }
-            set { name = value; }
-        }
+        public int GetId() => id;
 
-        public DateTime DateOfBirth
-        {
-            get { return dateofBirth; }
-            set { dateofBirth = value; }
-        }
+        public string GetName() => name;
 
-        public string Email
-        {
-            get { return email; }
-            set { email = value; }
-        }
+        public DateTime GetDateOfBirth() => dateofBirth;
 
-        public string Password
-        {
-            get { return password; }
-            set { password = value; }
-        }
+        public string GetEmail() => email;
 
-        public int xplevel
-        {
-            get { return xpLevel; }
-            set { xpLevel = value; }
-        }
+        public string GetPassword() => password;
+ 
+        public int GetXpLevel() => xpLevel;
 
-        public int Xp
-        {
-            get { return xp; }
-            set { xp = value; }
-        }
+        public int GetXp() => xp;
 
-        public List<Role> Roles
-        {
-            get { return roles; }
-            set { roles = value; }
-        }
-
-        public List<UserQuest> UserQuests
-        {
-            get { return userquests; }
-            set { userquests = value; }
-        }
+        public Route GetRoute() => route;
 
 
         public void CreateUser(User user)
 		{
-            SQLDAL sqldal = new SQLDAL();
+            SQLDAL sqldal = SQLDAL.GetSingleton();
             sqldal.CreateUser(user);
         }
 
 		public void DeleteUser(int id)
 		{
-            SQLDAL sqldal = new SQLDAL();
+            SQLDAL sqldal = SQLDAL.GetSingleton();
             sqldal.DeleteUser(id);
         }
 
 		public void UpdateUser(User user)
 		{
-            SQLDAL sqldal = new SQLDAL();
+            SQLDAL sqldal = SQLDAL.GetSingleton();
             sqldal.UpdateUser(user);
         }
 
-		public void GetUser()
+		public List<User> GetUser()
 		{
-            SQLDAL sqldal = new SQLDAL();
-            sqldal.GetUser();
+            SQLDAL sqldal = SQLDAL.GetSingleton();
+            return sqldal.GetUser();
         }
 
 		public void GetAnswers()

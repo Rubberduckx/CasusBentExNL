@@ -8,24 +8,31 @@ namespace ConsoleAppBENTExNL.Models
 {
 	internal class RoutePoint
 	{
-		private int _id;
-		private string _name;
+		private int id;
+		private string name;
 		private double latitude;
 		private double longitude;
-		private List<PointOfInterest> pointOfInterests;
-		private List<Route> routes;
+		private List<PointOfInterest> pointsOfInterest;
 
-		public static RoutePoint CreateRoutePoint()
+        public RoutePoint(int id, string name, double latitude, double longitude)
+        {
+            this.id = id;
+			this.name = name;
+			this.latitude = latitude;
+			this.longitude = longitude;
+        }
+
+        public void CreateRoutePoint()
 		{
 			throw new NotImplementedException();
 		}
 
-		public static void DeleteRoutePoint(RoutePoint routePoint)
+		public void DeleteRoutePoint(RoutePoint routePoint)
 		{
 			throw new NotImplementedException();
 		}
 
-		public static RoutePoint UpdateRoutePoint(/* Arguments neccesary? */)
+		public void UpdateRoutePoint(/* Arguments neccesary? */)
 		{
 			throw new NotImplementedException();
 		}
@@ -38,6 +45,11 @@ namespace ConsoleAppBENTExNL.Models
 		public void GetPointOfInterest(int pointOfInterestId = 0)
 		{
 			throw new NotImplementedException();
+		}
+
+		public void AddPointOfInterest(PointOfInterest pointOfInterest)
+		{
+			pointsOfInterest.Add(pointOfInterest);
 		}
 	}
 }
