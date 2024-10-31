@@ -32,6 +32,8 @@ namespace ConsoleAppBENTExNL.DAL
         private static readonly SQLDAL _singleton = new SQLDAL();
         // Waarom is dit static?
         // Graag even uitleggen voor verdeging
+
+
         public static SQLDAL GetSingleton()
         {
             return _singleton;
@@ -49,8 +51,8 @@ namespace ConsoleAppBENTExNL.DAL
             connection = new SqlConnection(connectionString);
         }
 
-        // USER
-        public List<User> GetUser()
+		/*  ==================== Get all users from the database ==================== */
+		public List<User> GetUser()
         {
             connection.Open();
 
@@ -74,7 +76,9 @@ namespace ConsoleAppBENTExNL.DAL
             return users;
         }
 
-        public void CreateUser(User user)
+
+		/*  ==================== Create a user in the database ==================== */
+		public void CreateUser(User user)
         {
             connection.Open();
             SqlCommand command = new SqlCommand("INSERT INTO [User] (name, dateofBirth, email, password, xlLevel, xp, routeId) " +
@@ -93,7 +97,9 @@ namespace ConsoleAppBENTExNL.DAL
             connection.Close();
         }
 
-        public void UpdateUser(User user) 
+
+		/*  ==================== Update a user in the database ==================== */
+		public void UpdateUser(User user) 
         {
             connection.Open();
 
@@ -114,7 +120,9 @@ namespace ConsoleAppBENTExNL.DAL
             connection.Close();
         }
 
-        public void DeleteUser(int id)
+
+		/*  ==================== Delete a user in the database ==================== */
+		public void DeleteUser(int id)
         {
             connection.Open();
             SqlCommand command = new SqlCommand("DELETE FROM [User] WHERE id = @id", connection);
@@ -123,8 +131,224 @@ namespace ConsoleAppBENTExNL.DAL
             connection.Close();
         }
 
-        // POI
-        public PointOfInterest GetPOI(int id) {
+
+		/*  ==================== Get a single area from the database where id is given id ==================== */
+		public Area GetArea(int id)
+		{
+			connection.Open();
+
+			SqlCommand command = new SqlCommand("SELECT * FROM Area WHERE id = @id", connection);
+			command.Parameters.AddWithValue("@id", id);
+			SqlDataReader reader = command.ExecuteReader();
+			while (reader.Read())
+			{
+				Area area = new Area(id, reader.GetDouble(1), reader.GetDouble(2), reader.GetString(3), reader.GetString(4));
+				return area;
+			}
+
+			throw new ArgumentException("No Area found at given id.", id.ToString());
+		}
+
+
+		/*  ==================== Create a area in the database ==================== */
+		public void CreateArea(Area area)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("INSERT INTO [Area] (lat, lng, image, description )", connection);
+
+			command.Parameters.AddWithValue("@lat", area.GetLat());
+			command.Parameters.AddWithValue("@lng", area.GetLng());
+			command.Parameters.AddWithValue("@image", area.GetImage());
+			command.Parameters.AddWithValue("@description", area.GetLat());
+
+			command.ExecuteNonQuery();
+
+			connection.Close();
+		}
+
+
+		/*  ==================== Create a area in the database ==================== */
+		public void DeleteArea(int id)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("DELETE FROM [Area] WHERE id = @id", connection);
+			command.Parameters.AddWithValue("@id", id);
+			command.ExecuteNonQuery();
+			connection.Close();
+		}
+
+
+		/*  ==================== Update a area in the database ==================== */
+		public void UpdateArea(Area area)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("Update [Area] SET lat = @lat, lng = @lng, image = @image, description = @description ", connection);
+
+			command.Parameters.AddWithValue("@lat", area.GetLat());
+			command.Parameters.AddWithValue("@lng", area.GetLng());
+			command.Parameters.AddWithValue("@image", area.GetImage());
+			command.Parameters.AddWithValue("@description", area.GetLat());
+
+			command.ExecuteNonQuery();
+
+			connection.Close();
+		}
+
+
+		/*  ==================== Get a single Observation from the database where id is given id ==================== */
+		public Observation GetObservation(int id)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("SELECT * FROM Observation WHERE id = @id", connection);
+			command.Parameters.AddWithValue("@id", id);
+			SqlDataReader reader = command.ExecuteReader();
+
+			Observation observation = null;
+
+			while (reader.Read())
+			{
+				double lat = reader.GetDouble(1);
+				double lng = reader.GetDouble(2);
+				Species species = GetSpecies(reader.GetInt32(3));
+				User user = GetUser()[reader.GetInt32(4)];
+				Area area = GetArea(reader.GetInt32(5));
+				string image = reader.GetString(6);
+				string description = reader.GetString(7);
+				observation = new Observation(id, lat, lng, species, user, area, image, description);
+			}
+			connection.Close();
+
+			return observation;
+		}
+
+
+		/*  ==================== Create an Observation in the database ==================== */
+		public void CreateObservation(Observation observation)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("INSERT INTO [Observation] (lat, lng, image, description, speciesId, userId, areaId) " +
+				"VALUES (@lat, @lng, @image, @description, @speciesId, @userId, @areaId); " +
+				"SELECT SCOPE_IDENTITY();", connection);
+
+			command.Parameters.AddWithValue("@lat", observation.GetLat());
+			command.Parameters.AddWithValue("@lng", observation.GetLong());
+			command.Parameters.AddWithValue("@image", observation.GetImage());
+			command.Parameters.AddWithValue("@description", observation.GetDescription());
+			command.Parameters.AddWithValue("@speciesId", observation.GetSpecies());
+
+			int id = Convert.ToInt32(command.ExecuteScalar());
+
+			connection.Close();
+
+		}
+
+
+		/*  ==================== Update an Observation in the database ==================== */
+		public void UpdateObservation(Observation observation)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("UPDATE [Observation] SET lat = @lat, lng = @lng, image = @image, description = @description, " +
+				"speciesId = @speciesId, userId = @userId, areaId = @areaId WHERE id = @id", connection);
+
+			command.Parameters.AddWithValue("@id", observation.GetId());
+			command.Parameters.AddWithValue("@lat", observation.GetLat());
+			command.Parameters.AddWithValue("@lng", observation.GetLong());
+			command.Parameters.AddWithValue("@image", observation.GetImage());
+			command.Parameters.AddWithValue("@description", observation.GetDescription());
+			command.Parameters.AddWithValue("@speciesId", observation.GetSpecies().GetId());
+			command.Parameters.AddWithValue("@userId", observation.GetUser().GetId());
+			command.Parameters.AddWithValue("@areaId", observation.GetArea().GetId());
+
+			command.ExecuteNonQuery();
+			connection.Close();
+		}
+
+
+		/*  ==================== Delete an Observation from the database ==================== */
+		public void DeleteObservation(int id)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("DELETE FROM [Observation] WHERE id = @id", connection);
+			command.Parameters.AddWithValue("@id", id);
+			command.ExecuteNonQuery();
+			connection.Close();
+		}
+
+
+		/* ==================== Get a single Species from the database where id is given ==================== */
+		public Species GetSpecies(int id)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("SELECT * FROM Species WHERE id = @id", connection);
+			command.Parameters.AddWithValue("@id", id);
+			SqlDataReader reader = command.ExecuteReader();
+
+			Species species = null;
+
+			if (reader.Read())
+			{
+				int speciesId = reader.GetInt32(0);
+				string name = reader.GetString(1);
+				string type = reader.GetString(2);
+				string description = reader.GetString(3);
+				int size = reader.GetInt32(4);
+
+				species = new Species(speciesId, name, type, description, size);
+			}
+			connection.Close();
+
+			return species;
+		}
+
+
+		/* ==================== Create a Species in the database ==================== */
+		public void CreateSpecies(Species species)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("INSERT INTO [Species] (name, type, description, size) " +
+				"VALUES (@name, @type, @description, @size); SELECT SCOPE_IDENTITY();", connection);
+
+			command.Parameters.AddWithValue("@name", species.GetName());
+			command.Parameters.AddWithValue("@type", species.GetType());
+			command.Parameters.AddWithValue("@description", species.GetDescription());
+			command.Parameters.AddWithValue("@size", species.GetSize());
+
+			int id = Convert.ToInt32(command.ExecuteScalar());
+			connection.Close();
+
+			// Assuming you have a method to set ID in Species (optional)
+			// species.SetId(id);
+		}
+
+		/* ==================== Update a Species in the database ==================== */
+		public void UpdateSpecies(Species species)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("UPDATE [Species] SET name = @name, type = @type, description = @description, size = @size " +
+				"WHERE id = @id", connection);
+
+			command.Parameters.AddWithValue("@id", species.GetId());
+			command.Parameters.AddWithValue("@name", species.GetName());
+			command.Parameters.AddWithValue("@type", species.GetType());
+			command.Parameters.AddWithValue("@description", species.GetDescription());
+			command.Parameters.AddWithValue("@size", species.GetSize());
+
+			command.ExecuteNonQuery();
+			connection.Close();
+		}
+
+		/* ==================== Delete a Species from the database ==================== */
+		public void DeleteSpecies(int id)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("DELETE FROM [Species] WHERE id = @id", connection);
+			command.Parameters.AddWithValue("@id", id);
+			command.ExecuteNonQuery();
+			connection.Close();
+		}
+
+		/*  ==================== Get a single POI from the database ==================== */
+		public PointOfInterest GetPOI(int id) {
             connection.Open();
 
             SqlCommand command = new SqlCommand("SELECT * FROM POI WHERE id = @id", connection);
@@ -139,9 +363,9 @@ namespace ConsoleAppBENTExNL.DAL
             throw new ArgumentException("No PointOfInterest found at given id.", id.ToString());
         }
 
-        // ROUTE
 
-        public RoutePoint GetRoutePoint(int id)
+		/*  ==================== Get a single routepoint from the database where id is given id ==================== */
+		public RoutePoint GetRoutePoint(int id)
         {
             connection.Open();
 
@@ -157,7 +381,9 @@ namespace ConsoleAppBENTExNL.DAL
             throw new ArgumentException("No RoutePoint found at given id.", id.ToString());
         }
 
-        public Route GetRoute(int id)
+
+		/*  ==================== Get a single route from the database where id is given id ==================== */
+		public Route GetRoute(int id)
         {
             connection.Open();
 
@@ -174,78 +400,9 @@ namespace ConsoleAppBENTExNL.DAL
             throw new ArgumentException("No Route found at given id.", id.ToString());
         }
 
-        //TODO: IMPLEMENT
-        public Area GetArea(int id)
-        {
-            throw new NotImplementedException();
-        }
-        //TODO: IMPLEMENT
-        public Species GetSpecies(int id)
-        {
-            throw new NotImplementedException();
-        }
 
-        // OBSERVATION
-        public Observation CreateObservation(double lat, double lng, string image, string description, int speciesId, User user, int areaId)
-        {
-            connection.Open();
-            SqlCommand command = new SqlCommand("INSERT INTO [Observation] (lat, long, image, description, speciesId, userId, areaId) " +
-        "VALUES (@lat, @long, @image, @description, @speciesId, @userId, @areaId); " +
-        "SELECT SCOPE_IDENTITY();", connection);
-
-            command.Parameters.AddWithValue("@lat", lat);
-            command.Parameters.AddWithValue("@long", lng);
-            command.Parameters.AddWithValue("@image", image);
-            command.Parameters.AddWithValue("@description", description);
-            command.Parameters.AddWithValue("@speciesId", speciesId);
-            command.Parameters.AddWithValue("@userId", user.GetId());
-            command.Parameters.AddWithValue("@areaId", areaId);
-
-            //TODO: Test if this works properly.
-            int id = Convert.ToInt32(command.ExecuteScalar());
-
-            connection.Close();
-
-            Observation observation = new Observation(id, lat, lng, null, user, GetArea(areaId), image, description);
-            return observation;
-        }
-
-        public Observation GetObservation(int id)
-        {
-            connection.Open();
-
-            SqlCommand command = new SqlCommand("SELECT * FROM Observation WHERE id = @id", connection);
-            SqlDataReader reader = command.ExecuteReader();
-
-            Observation observation = null;
-
-            while (reader.Read())
-            {
-                double lat = reader.GetDouble(1);
-                double lng = reader.GetDouble(2);
-                Species species = GetSpecies(reader.GetInt32(3));
-                User user = GetUser()[reader.GetInt32(4)];
-                Area area = GetArea(reader.GetInt32(5));
-                string image = reader.GetString(6);
-                string description = reader.GetString(7);
-                observation = new Observation(id, lat, lng, species, user, area, image, description);
-            }
-            connection.Close();
-            
-            return observation;
-        }
-        public void DeleteObservation(int id)
-        {
-            connection.Open();
-            SqlCommand command = new SqlCommand("DELETE FROM [Observation] WHERE id = @id", connection);
-            command.Parameters.AddWithValue("@id", id);
-            command.ExecuteNonQuery();
-            connection.Close();
-        }
-
-        // ROLE
-
-        public List<Role> GetAllRoles()
+		/*  ==================== Get all roles from the database ==================== */
+		public List<Role> GetAllRoles()
         {
             connection.Open();
             SqlCommand command = new SqlCommand("SELECT * FROM Role", connection);
@@ -265,7 +422,9 @@ namespace ConsoleAppBENTExNL.DAL
             return roles;
         }
 
-        public Role GetRoleById(int id)
+
+		/*  ==================== Get a single role from the database where id is given id ==================== */
+		public Role GetRoleById(int id)
         {
             connection.Open();
 
@@ -289,7 +448,9 @@ namespace ConsoleAppBENTExNL.DAL
             throw new ArgumentException("No Role found at given id.", id.ToString());
         }
 
-        public void CreateRole(Role role)
+
+		/*  ==================== Create a role ==================== */
+		public void CreateRole(Role role)
         {
             connection.Open();
             SqlCommand command = new SqlCommand("INSERT INTO [Role] (type, description, permissions) " +
@@ -304,7 +465,9 @@ namespace ConsoleAppBENTExNL.DAL
             connection.Close();
         }
 
-        public void DeleteRole(int id) 
+
+		/*  ==================== Delete a role ==================== */
+		public void DeleteRole(int id) 
         {
             connection.Open();
             SqlCommand command = new SqlCommand("DELETE FROM [Role] WHERE id = @id", connection);
@@ -313,7 +476,9 @@ namespace ConsoleAppBENTExNL.DAL
             connection.Close();
         }
 
-        public void UpdateRole(Role role)
+
+		/*  ==================== Update a role ==================== */
+		public void UpdateRole(Role role)
         {
             connection.Open();
 
