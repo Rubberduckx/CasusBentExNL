@@ -14,7 +14,7 @@ namespace ConsoleAppBENTExNL
         static void Main(string[] args)
         {
             // TEMPORARY CODE START
-            DijkstraTest();
+            //DijkstraTest();
             // TEMPORARY CODE END
 
             User user = new User();
@@ -28,126 +28,150 @@ namespace ConsoleAppBENTExNL
                 Console.WriteLine("3: Gebruiker verwijderen");
                 Console.WriteLine("4: Gebruikers ophalen");
                 Console.WriteLine();
+                Console.WriteLine("5: Area aanmaken");
+                Console.WriteLine("6: Area aanpassen");
+                Console.WriteLine("7: Area verwijderen");
+                Console.WriteLine("8: Area ophalen");
+                Console.WriteLine();
                 Console.WriteLine("10: Exit application");
 
                 string input = Console.ReadLine();
 
-                if (input == "1")
+                switch (input)
                 {
-                    Console.Clear();
-                    Console.WriteLine("Gebruiker aanmaken");
-                    Console.WriteLine();
+                    case "1":
+                        Console.Clear();
+                        Console.WriteLine("Gebruiker aanmaken");
+                        Console.WriteLine();
 
-                    Console.WriteLine("Voer een naam in");
-                    string name = Console.ReadLine();
+                        Console.WriteLine("Voer een naam in");
+                        string name = Console.ReadLine();
 
-                    Console.WriteLine("Voer uw geboorte datum in");
-                    DateTime dateofBirth = DateTime.Parse(Console.ReadLine());
+                        Console.WriteLine("Voer uw geboorte datum in");
+                        DateTime dateofBirth = DateTime.Parse(Console.ReadLine());
 
-                    Console.WriteLine("Voor uw email in");
-                    string email = Console.ReadLine();
+                        Console.WriteLine("Voor uw email in");
+                        string email = Console.ReadLine();
 
-                    Console.WriteLine("Voer uw wachtwoord in");
-                    string password = Console.ReadLine();
+                        Console.WriteLine("Voer uw wachtwoord in");
+                        string password = Console.ReadLine();
 
-                    int xpLevel = 10;
-                    int xp = 50;
+                        int xpLevel = 10;
+                        int xp = 50;
 
-                    User userToAdd = new User(name, dateofBirth, email, password, xpLevel, xp);
+                        User userToAdd = new User(name, dateofBirth, email, password, xpLevel, xp);
 
-                    user.CreateUser(userToAdd);
+                        user.CreateUser(userToAdd);
 
-                    Console.WriteLine("Gebruiker is aangemaakt");
-                    Console.ReadKey();
-                }
+                        Console.WriteLine("Gebruiker is aangemaakt");
+                        Console.ReadKey();
+                        break;
 
-                else if (input == "2")
-                {
-                    Console.Clear();
-                    Console.WriteLine("Gebruiker aanpassen");
+                    case "2":
+                        Console.Clear();
+                        Console.WriteLine("Gebruiker aanpassen");
+                        Console.WriteLine();
 
-                    Console.WriteLine();
+                        foreach (User u in user.GetUser())
+                        {
+                            Console.WriteLine(u.GetId() + " " + u.GetName());
+                        }
 
-                    foreach (User u in user.GetUser())
-                    {
-                        Console.WriteLine(u.GetId() + " " + u.GetName());
-                    }
+                        Console.WriteLine();
+                        Console.WriteLine("Voer het id in van de gebruiker die u wilt aanpassen");
+                        int id = int.Parse(Console.ReadLine());
 
-                    Console.WriteLine();
+                        Console.WriteLine("Voer een naam in");
+                        name = Console.ReadLine();
 
-                    Console.WriteLine("Voer het id in van de gebruiker die u wilt aanpassen");
-                    int id = int.Parse(Console.ReadLine());
+                        Console.WriteLine("Voer uw geboorte datum in");
+                        dateofBirth = DateTime.Parse(Console.ReadLine());
 
-                    Console.WriteLine("Voer een naam in");
-                    string name = Console.ReadLine();
+                        Console.WriteLine("Voor uw email in");
+                        email = Console.ReadLine();
 
-                    Console.WriteLine("Voer uw geboorte datum in");
-                    DateTime dateofBirth = DateTime.Parse(Console.ReadLine());
+                        Console.WriteLine("Voer uw wachtwoord in");
+                        password = Console.ReadLine();
 
-                    Console.WriteLine("Voor uw email in");
-                    string email = Console.ReadLine();
+                        xpLevel = 10;
+                        xp = 50;
 
-                    Console.WriteLine("Voer uw wachtwoord in");
-                    string password = Console.ReadLine();
+                        User userToUpdate = new User(id, name, dateofBirth, email, password, xpLevel, xp);
 
-                    int xpLevel = 10;
-                    int xp = 50;
+                        user.UpdateUser(userToUpdate);
 
-                    User userToUpdate = new User(id, name, dateofBirth, email, password, xpLevel, xp);
+                        Console.WriteLine($"Id: {userToUpdate.GetId()}, is succesvol aangepast");
+                        Console.ReadKey();
+                        break;
 
-                    user.UpdateUser(userToUpdate);
+                    case "3":
+                        Console.Clear();
+                        Console.WriteLine("Gebruiker verwijderen");
+                        Console.WriteLine();
 
-                    Console.WriteLine($"Id: {userToUpdate.GetId()}, is succesvol aangepast");
+                        foreach (User u in user.GetUser())
+                        {
+                            Console.WriteLine(u.GetId() + " " + u.GetName());
+                        }
 
-                    Console.ReadKey();
-                }
+                        Console.WriteLine();
+                        Console.WriteLine("Welk Id wilt u verwijderen?");
+                        id = int.Parse(Console.ReadLine());
 
-                else if (input == "3")
-                {
-                    Console.Clear();
-                    Console.WriteLine("Gebruiker verwijderen");
-                    Console.WriteLine();
+                        user.DeleteUser(id);
 
-                    foreach (User u in user.GetUser())
-                    {
-                        Console.WriteLine(u.GetId() + " " + u.GetName());
-                    }
+                        Console.WriteLine($"Id: {id}, is succesvol verwijderd");
+                        Console.ReadLine();
+                        break;
 
-                    Console.WriteLine();
-                    Console.WriteLine("Welk Id wilt u verwijderen?");
-                    int id = int.Parse(Console.ReadLine());
+                    case "4":
+                        Console.Clear();
+                        Console.WriteLine("Gebruikers in de database");
+                        Console.WriteLine();
 
-                    user.DeleteUser(id);
+                        foreach (User u in user.GetUser())
+                        {
+                            Console.WriteLine(u.GetId() + " " + u.GetName());
+                        }
 
-                    Console.WriteLine($"Id: {id}, is succesvol verwijderd");
+                        Console.ReadLine();
+                        break;
 
-                    Console.ReadLine();
-                }
+                    case "5":
+                        Console.Clear();
+                        Console.WriteLine("Area aanmaken");
+                        Console.WriteLine();
+                        
+                        Console.WriteLine("Voer een breedtegraad in");
+                        double lat = double.Parse(Console.ReadLine());
 
-                else if (input == "4")
-                {
-                    Console.Clear();
-                    Console.WriteLine("Gebruikers in de database");
+                        Console.WriteLine("Voer een lengtegraad in");
+                        double lon = double.Parse(Console.ReadLine());
 
-                    Console.WriteLine();
+                        Console.WriteLine("Voer een afbeelding in");
+                        string image = Console.ReadLine();
 
-                    foreach (User u in user.GetUser())
-                    {
-                        Console.WriteLine(u.GetId() + " "+u.GetName());
-                    }
+                        Console.WriteLine("Voer een beschrijving in");
+                        string description = Console.ReadLine();
 
-                    Console.ReadLine();
-                }
+                        Area areaToAdd = new Area(lat, lon, image, description);
 
-                else if (input == "10")
-                {
-                    isRunning = false;
-                }
+                        areaToAdd.CreateArea(areaToAdd);
 
-                else
-                {
-                    Console.WriteLine("Foutieve invoer");
-                    Console.ReadKey();
+                        Console.WriteLine("Area is aangemaakt");
+                        Console.ReadKey();
+                        break;
+
+                    case "10":
+                        isRunning = false;
+                        break;
+
+
+
+                    default:
+                        Console.WriteLine("Foutieve invoer");
+                        Console.ReadKey();
+                        break;
                 }
             }
         }
