@@ -335,9 +335,6 @@ namespace ConsoleAppBENTExNL.DAL
 
 			int id = Convert.ToInt32(command.ExecuteScalar());
 			connection.Close();
-
-			// Assuming you have a method to set ID in Species (optional)
-			// species.SetId(id);
 		}
 
 		/* ==================== Update a Species in the database ==================== */
@@ -427,10 +424,68 @@ namespace ConsoleAppBENTExNL.DAL
             throw new ArgumentException("No Route found at given id.", id.ToString());
         }
 
-
-		/*  ==================== Get all roles from the database ==================== */
-		public List<Role> GetAllRoles()
+        /*  ==================== Get all routes frm the database ==================== */
+        public List<Route> GetAllRoutes(int id)
         {
+            List<Route> routes = new List<Route>();
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("SELECT * FROM Route", connection);
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                Area area = GetArea(reader.GetInt32(2));
+                Route route = new Route(id, reader.GetString(1), area);
+                routes.Add(route);
+            }
+
+            return routes;
+        }
+
+        /* ==================== Create a Route in the database ==================== */
+        public void CreateRoute(string name, int areaId)
+        {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("INSERT INTO Route (name, areaId) VALUES (@name, @areaId); SELECT SCOPE_IDENTITY();", connection);
+            command.Parameters.AddWithValue("@name", name);
+            command.Parameters.AddWithValue("@areaId", areaId);
+
+            int newId = Convert.ToInt32(command.ExecuteScalar());
+            connection.Close();
+        }
+
+        /* ==================== Update a Route in the database ==================== */
+        public void UpdateRoute(int id, string name, int areaId)
+        {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("UPDATE Route SET name = @name, areaId = @areaId WHERE id = @id", connection);
+            command.Parameters.AddWithValue("@id", id);
+            command.Parameters.AddWithValue("@name", name);
+            command.Parameters.AddWithValue("@areaId", areaId);
+
+            command.ExecuteNonQuery();
+            connection.Close();
+
+        }
+
+        /* ==================== Delete a Route from the database ==================== */
+        public void DeleteRoute(int id)
+        {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("DELETE FROM Route WHERE id = @id", connection);
+            command.Parameters.AddWithValue("@id", id);
+
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+
+        /*  ==================== Get all roles from the database ==================== */
+        public List<Role> GetAllRoles()
+        {
+            roles.Clear();
             connection.Open();
             SqlCommand command = new SqlCommand("SELECT * FROM Role", connection);
             SqlDataReader reader = command.ExecuteReader();
