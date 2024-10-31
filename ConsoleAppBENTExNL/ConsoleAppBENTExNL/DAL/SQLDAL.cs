@@ -47,7 +47,7 @@ namespace ConsoleAppBENTExNL.DAL
             areas = new List<Area>();
 
             //connectionString
-            connectionString = "Server=192.168.1.15;Database=BENTCasusExNL;User Id=sa;Password=<YourStrong@Passw0rd>;";
+            connectionString = "*";
 
             // Create a new SqlConnection object
             connection = new SqlConnection(connectionString);
