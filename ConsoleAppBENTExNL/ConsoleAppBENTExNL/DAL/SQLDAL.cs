@@ -19,6 +19,7 @@ namespace ConsoleAppBENTExNL.DAL
 
         public List<User> users;
         public List<Role> roles;
+        public List<Area> areas;
 
         // Deze code implementeert een singleton-patroon voor de SQLDAL-klasse.  
         // De SQLDAL-klasse is verantwoordelijk voor databasebewerkingen met betrekking tot gebruikers,
@@ -43,6 +44,7 @@ namespace ConsoleAppBENTExNL.DAL
         {
             users = new List<User>();
             roles = new List<Role>();
+            areas = new List<Area>();
 
             //connectionString
             connectionString = "*";
@@ -159,7 +161,8 @@ namespace ConsoleAppBENTExNL.DAL
 			SqlDataReader reader = command.ExecuteReader();
 			while (reader.Read())
 			{
-				Area area = new Area(id, reader.GetDouble(1), reader.GetDouble(2), reader.GetString(3), reader.GetString(4));
+				Area area = new Area(id, reader.GetString(1), reader.GetDouble(2), reader.GetDouble(3), reader.GetString(4), 
+                    reader.GetString(4));
 				return area;
 			}
 
@@ -168,14 +171,36 @@ namespace ConsoleAppBENTExNL.DAL
             throw new ArgumentException("No Area found at given id.", id.ToString());
 		}
 
-
-		/*  ==================== Create a area in the database ==================== */
-		public void CreateArea(Area area)
+        /*  ==================== Get a all areas from the database ==================== */
+        public List<Area> GetAllAreas()
         {
             connection.Open();
-            SqlCommand command = new SqlCommand("INSERT INTO [Area] (lat, long, image, description) VALUES " +
-                "(@lat, @long, @image, @description)", connection);
+            areas.Clear();
 
+            SqlCommand command = new SqlCommand("SELECT * FROM [Area]", connection);
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                Area area = new Area(reader.GetInt32(0), reader.GetString(1), reader.GetDouble(2), reader.GetDouble(3), 
+                    reader.GetString(4), reader.GetString(5));
+
+                areas.Add(area);
+            }
+
+            connection.Close();
+
+            return areas;
+        }
+
+
+        /*  ==================== Create a area in the database ==================== */
+        public void CreateArea(Area area)
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("INSERT INTO Area (name, lat, long, image, description) VALUES " +
+                "(@name, @lat, @long, @image, @description)", connection);
+
+            command.Parameters.AddWithValue("@name", area.GetName());
             command.Parameters.AddWithValue("@lat", area.GetLat());
             command.Parameters.AddWithValue("@long", area.GetLng());
             command.Parameters.AddWithValue("@image", area.GetImage());
@@ -202,10 +227,11 @@ namespace ConsoleAppBENTExNL.DAL
 		public void UpdateArea(Area area)
 		{
 			connection.Open();
-			SqlCommand command = new SqlCommand("Update [Area] SET lat = @lat, lng = @lng, image = @image, description = @description ", connection);
+			SqlCommand command = new SqlCommand("Update [Area] SET name = @name, lat = @lat, long = @long, image = @image, description = @description ", connection);
 
-			command.Parameters.AddWithValue("@lat", area.GetLat());
-			command.Parameters.AddWithValue("@lng", area.GetLng());
+            command.Parameters.AddWithValue("@name", area.GetName());
+            command.Parameters.AddWithValue("@lat", area.GetLat());
+			command.Parameters.AddWithValue("@long", area.GetLng());
 			command.Parameters.AddWithValue("@image", area.GetImage());
 			command.Parameters.AddWithValue("@description", area.GetLat());
 
