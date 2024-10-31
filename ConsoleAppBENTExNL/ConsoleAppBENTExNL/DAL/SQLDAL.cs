@@ -53,9 +53,9 @@ namespace ConsoleAppBENTExNL.DAL
 
 		/*  ==================== Get all users from the database ==================== */
 		public List<User> GetUser()
-        {
+        { 
             connection.Open();
-
+            users.Clear();
             SqlCommand command = new SqlCommand("SELECT * FROM [User]", connection);
             SqlDataReader reader = command.ExecuteReader();
 
@@ -68,7 +68,8 @@ namespace ConsoleAppBENTExNL.DAL
                 string password = reader.GetString(4);
                 int xpLevel = reader.GetInt32(5);
                 int xp = reader.GetInt32(6);
-                Route route = GetRoute(reader.GetInt32(7));
+                int? routeId = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7);
+                Route route = routeId.HasValue ? GetRoute(routeId.Value) : null;
 
                 users.Add(new User(id, name, dateofBirth, email, password, xpLevel, xp, route));
             }
@@ -90,8 +91,16 @@ namespace ConsoleAppBENTExNL.DAL
             command.Parameters.AddWithValue("@password", user.GetPassword());
             command.Parameters.AddWithValue("@xplevel", user.GetXpLevel());
             command.Parameters.AddWithValue("@xp", user.GetXp());
-            command.Parameters.AddWithValue("@routeId", user.GetRoute().GetId());
-
+            
+            var route = user.GetRoute();
+            if (route != null)
+            {
+                command.Parameters.AddWithValue("@routeId", route.GetId());
+            }
+            else
+            {
+                command.Parameters.AddWithValue("@routeId", DBNull.Value);
+            }
             command.ExecuteNonQuery();
 
             connection.Close();
@@ -114,7 +123,15 @@ namespace ConsoleAppBENTExNL.DAL
             command.Parameters.AddWithValue("@password", user.GetPassword());
             command.Parameters.AddWithValue("@xplevel", user.GetXpLevel());
             command.Parameters.AddWithValue("@xp", user.GetXp());
-            command.Parameters.AddWithValue("@routeId", user.GetRoute().GetId());
+            
+            if (user.GetRoute() != null)
+            {
+                command.Parameters.AddWithValue("@routeId", user.GetRoute().GetId());
+            }
+            else
+            {
+                command.Parameters.AddWithValue("@routeId", DBNull.Value);
+            }
 
             command.ExecuteNonQuery();
             connection.Close();
@@ -146,25 +163,28 @@ namespace ConsoleAppBENTExNL.DAL
 				return area;
 			}
 
-			throw new ArgumentException("No Area found at given id.", id.ToString());
+            connection.Close();
+
+            throw new ArgumentException("No Area found at given id.", id.ToString());
 		}
 
 
 		/*  ==================== Create a area in the database ==================== */
 		public void CreateArea(Area area)
-		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("INSERT INTO [Area] (lat, lng, image, description )", connection);
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("INSERT INTO [Area] (lat, long, image, description) VALUES " +
+                "(@lat, @long, @image, @description)", connection);
 
-			command.Parameters.AddWithValue("@lat", area.GetLat());
-			command.Parameters.AddWithValue("@lng", area.GetLng());
-			command.Parameters.AddWithValue("@image", area.GetImage());
-			command.Parameters.AddWithValue("@description", area.GetLat());
+            command.Parameters.AddWithValue("@lat", area.GetLat());
+            command.Parameters.AddWithValue("@long", area.GetLng());
+            command.Parameters.AddWithValue("@image", area.GetImage());
+            command.Parameters.AddWithValue("@description", area.GetDescription());
 
-			command.ExecuteNonQuery();
+            command.ExecuteNonQuery();
 
-			connection.Close();
-		}
+            connection.Close();
+        }
 
 
 		/*  ==================== Create a area in the database ==================== */
@@ -360,6 +380,8 @@ namespace ConsoleAppBENTExNL.DAL
                 return POI;
             }
 
+            connection.Close();
+
             throw new ArgumentException("No PointOfInterest found at given id.", id.ToString());
         }
 
@@ -378,6 +400,8 @@ namespace ConsoleAppBENTExNL.DAL
                 return routePoint;
             }
 
+            connection.Close();
+
             throw new ArgumentException("No RoutePoint found at given id.", id.ToString());
         }
 
@@ -385,6 +409,7 @@ namespace ConsoleAppBENTExNL.DAL
 		/*  ==================== Get a single route from the database where id is given id ==================== */
 		public Route GetRoute(int id)
         {
+            connection.Close();
             connection.Open();
 
             SqlCommand command = new SqlCommand("SELECT * FROM Route WHERE id = @id", connection);
@@ -396,6 +421,8 @@ namespace ConsoleAppBENTExNL.DAL
                 Route route = new Route(id, reader.GetString(1), area);
                 return route;
             }
+
+            connection.Close();
 
             throw new ArgumentException("No Route found at given id.", id.ToString());
         }

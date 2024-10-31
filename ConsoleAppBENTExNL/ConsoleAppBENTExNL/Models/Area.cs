@@ -16,6 +16,13 @@ namespace ConsoleAppBENTExNL.Models
 		private string image { get; set; }
 		private string description { get; set; }
 
+		public Area(double lat, double lng, string image, string description)
+		{
+            this.lat = lat;
+            this.lng = lng;
+            this.image = image;
+            this.description = description;
+        }
 		public Area(int id, double lat, double lng, string image, string description)
 		{
 			this.id = id;
@@ -29,7 +36,7 @@ namespace ConsoleAppBENTExNL.Models
 		public double GetLat() => lat;
 		public double GetLng() => lng;
 		public string GetImage() => image;
-		public string Description => description;
+		public string GetDescription() => description;
 
 
 		public void CreateArea(Area area)
