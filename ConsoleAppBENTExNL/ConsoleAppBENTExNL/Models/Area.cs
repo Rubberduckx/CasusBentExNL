@@ -11,32 +11,41 @@ namespace ConsoleAppBENTExNL.Models
 	{
 
 		private int id { get; set; }
+		private string name;
 		private double lat { get; set; }
 		private double lng { get; set; }
 		private string image { get; set; }
 		private string description { get; set; }
 
-		public Area(double lat, double lng, string image, string description)
+		public Area()
 		{
+
+		}
+		public Area(string name, double lat, double lng, string image, string description)
+		{
+			this.name = name;
             this.lat = lat;
             this.lng = lng;
             this.image = image;
             this.description = description;
         }
-		public Area(int id, double lat, double lng, string image, string description)
+		public Area(int id, string name, double lat, double lng, string image, string description)
 		{
 			this.id = id;
-			this.lat = lat;
+			this.name = name;
+            this.lat = lat;
 			this.lng = lng;
 			this.image = image;
 			this.description = description;
 		}
 
 		public int GetId() => id;
-		public double GetLat() => lat;
+        public string GetName() => name;
+        public double GetLat() => lat;
 		public double GetLng() => lng;
 		public string GetImage() => image;
 		public string GetDescription() => description;
+		
 
 
 		public void CreateArea(Area area)
@@ -44,6 +53,12 @@ namespace ConsoleAppBENTExNL.Models
 			SQLDAL sqldal = SQLDAL.GetSingleton();
 			sqldal.CreateArea(area);
 		}
+
+		public List<Area> GetAllAreas() 
+		{
+            SQLDAL sqldal = SQLDAL.GetSingleton();
+            return sqldal.GetAllAreas();
+        }
 
 		public void GetArea(int id)
 		{

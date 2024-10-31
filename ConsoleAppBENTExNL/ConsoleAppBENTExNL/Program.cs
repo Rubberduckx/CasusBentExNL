@@ -14,10 +14,12 @@ namespace ConsoleAppBENTExNL
         static void Main(string[] args)
         {
             // TEMPORARY CODE START
-            //DijkstraTest();
+            // DijkstraTest();
             // TEMPORARY CODE END
 
             User user = new User();
+            Area area = new Area();
+
             bool isRunning = true;
 
             while (isRunning)
@@ -63,7 +65,7 @@ namespace ConsoleAppBENTExNL
 
                         user.CreateUser(userToAdd);
 
-                        Console.WriteLine("Gebruiker is aangemaakt");
+                        Console.WriteLine($"Name: {user.GetName()}, is succesvol aangemaakt");
                         Console.ReadKey();
                         break;
 
@@ -100,7 +102,7 @@ namespace ConsoleAppBENTExNL
 
                         user.UpdateUser(userToUpdate);
 
-                        Console.WriteLine($"Id: {userToUpdate.GetId()}, is succesvol aangepast");
+                        Console.WriteLine($"Name: {userToUpdate.GetName()}, is succesvol aangepast");
                         Console.ReadKey();
                         break;
 
@@ -141,7 +143,10 @@ namespace ConsoleAppBENTExNL
                         Console.Clear();
                         Console.WriteLine("Area aanmaken");
                         Console.WriteLine();
-                        
+
+                        Console.WriteLine("Voer een naam in");
+                        string nameArea = Console.ReadLine();
+
                         Console.WriteLine("Voer een breedtegraad in");
                         double lat = double.Parse(Console.ReadLine());
 
@@ -154,12 +159,82 @@ namespace ConsoleAppBENTExNL
                         Console.WriteLine("Voer een beschrijving in");
                         string description = Console.ReadLine();
 
-                        Area areaToAdd = new Area(lat, lon, image, description);
+                        Area areaToAdd = new Area(nameArea, lat, lon, image, description);
 
                         areaToAdd.CreateArea(areaToAdd);
 
-                        Console.WriteLine("Area is aangemaakt");
+                        Console.WriteLine($"Name: {areaToAdd.GetName()}, is succesvol aangepast");
                         Console.ReadKey();
+                        break;
+
+                    case "6":
+                        Console.Clear();
+                        Console.WriteLine("Area aanpassen");
+                        Console.WriteLine();
+
+                        foreach (Area a in area.GetAllAreas())
+                        {
+                            Console.WriteLine(a.GetId() + " " + a.GetLat());
+                        }
+                        Console.WriteLine();
+
+                        Console.WriteLine("Voer het id in van de gebruiker die u wilt aanpassen");
+                        int areaId = int.Parse(Console.ReadLine());
+
+                        Console.WriteLine("Voer een naam in");
+                        string name1 = Console.ReadLine();
+
+                        Console.WriteLine("Voer een breedtegraad in");
+                        double lat1 = double.Parse(Console.ReadLine());
+
+                        Console.WriteLine("Voer een lengtegraad in");
+                        double lon1 = double.Parse(Console.ReadLine());
+
+                        Console.WriteLine("Voer een afbeelding in");
+                        string image1 = Console.ReadLine();
+
+                        Console.WriteLine("Voer een beschrijving in");
+                        string description1 = Console.ReadLine();
+
+                        Area areaToEdit = new Area(areaId, name1, lat1, lon1, image1, description1);
+
+                        areaToEdit.UpdateArea(areaToEdit);
+
+                        Console.WriteLine($"Name: {areaToEdit.GetName()}, is succesvol aangepast");
+                        Console.ReadKey();
+                        break;
+
+                    case "7":
+                        Console.Clear();
+                        Console.WriteLine("Area verwijderen");
+                        Console.WriteLine();
+
+                        foreach (Area a in area.GetAllAreas())
+                        {
+                            Console.WriteLine(a.GetId() + " " + a.GetName());
+                        }
+                        Console.WriteLine();
+
+                        Console.WriteLine("Voer het id in van de gebruiker die u wilt verwijderen");
+                        int areaId1 = int.Parse(Console.ReadLine());
+
+                        area.DeleteArea(areaId1);
+
+                        Console.WriteLine($"Name: {area.GetName()} is verwijderd");
+                        Console.ReadKey();
+                        break;
+
+                    case "8":
+                        Console.Clear();
+                        Console.WriteLine("Areas in de database");
+                        Console.WriteLine();
+
+                        foreach (Area a in area.GetAllAreas())
+                        {
+                            Console.WriteLine(a.GetId() + " " + a.GetName());
+                        }
+
+                        Console.ReadLine();
                         break;
 
                     case "10":
