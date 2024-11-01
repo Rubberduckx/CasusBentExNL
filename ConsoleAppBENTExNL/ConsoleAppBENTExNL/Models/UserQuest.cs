@@ -14,7 +14,12 @@ namespace ConsoleAppBENTExNL.Models
 		private User userId;
 		private Question questionId;
 
-		public UserQuest(int _id, bool _isCorrect, string _givenAnswer, User _userId, Question _questionId)
+		public UserQuest()
+        {
+
+        }
+
+        public UserQuest(int _id, bool _isCorrect, string _givenAnswer, User _userId, Question _questionId)
 		{
 			id = _id;
 			isCorrect = _isCorrect;
