@@ -16,7 +16,19 @@ namespace ConsoleAppBENTExNL.Models
 		private string permission;
 		private List<User> users = new List<User>();
 
-		public Role(int _id, string _type, string _description, string _permission)
+		public Role()
+        {
+
+        }
+
+		public Role(string _type, string _description, string _permission)
+		{
+            type = _type;
+            description = _description;
+            permission = _permission;
+        }
+
+        public Role(int _id, string _type, string _description, string _permission)
 		{
 			id = _id;
 			type = _type;
@@ -36,7 +48,13 @@ namespace ConsoleAppBENTExNL.Models
             sqldal.CreateRole(role);
         }
 
-		public void DeleteRole(int id)
+		public void UpdateRole(Role role)
+        {
+            SQLDAL sqldal = SQLDAL.GetSingleton();
+            sqldal.UpdateRole(role);
+        }
+
+        public void DeleteRole(int id)
 		{
             SQLDAL sqldal = SQLDAL.GetSingleton();
             sqldal.DeleteRole(id);

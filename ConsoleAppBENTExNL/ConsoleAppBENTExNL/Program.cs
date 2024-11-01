@@ -19,6 +19,7 @@ namespace ConsoleAppBENTExNL
 
             User user = new User();
             Area area = new Area();
+            Role role = new Role();
 
             bool isRunning = true;
 
@@ -33,9 +34,14 @@ namespace ConsoleAppBENTExNL
                 Console.WriteLine("5: Area aanmaken");
                 Console.WriteLine("6: Area aanpassen");
                 Console.WriteLine("7: Area verwijderen");
-                Console.WriteLine("8: Area ophalen");
+                Console.WriteLine("8: Areas ophalen");
                 Console.WriteLine();
-                Console.WriteLine("10: Exit application");
+                Console.WriteLine("9: Role aanmaken");
+                Console.WriteLine("10: Role aanpassen");
+                Console.WriteLine("11: Role verwijderen");
+                Console.WriteLine("12: Roles ophalen");
+                Console.WriteLine();
+                Console.WriteLine("100: Exit application");
 
                 string input = Console.ReadLine();
 
@@ -237,11 +243,97 @@ namespace ConsoleAppBENTExNL
                         Console.ReadLine();
                         break;
 
-                    case "10":
-                        isRunning = false;
+                     case "9":
+                        Console.Clear();
+                        Console.WriteLine("Role aanmaken");
+                        Console.WriteLine();
+
+                        Console.WriteLine("Voer een type in");
+                        string typeC = Console.ReadLine();
+
+                        Console.WriteLine("Voer een beschrijving in");
+                        string descriptionRoleC = Console.ReadLine();
+
+                        Console.WriteLine("Voer een permissie in");
+                        string permissionC = Console.ReadLine();
+
+                        Role roleToAdd = new Role(typeC, descriptionRoleC, permissionC);
+
+                        roleToAdd.CreateRole(roleToAdd);
+
+                        Console.WriteLine($"Type: {roleToAdd.GetTypeRole()}, is succesvol aangemaakt");
+                        Console.ReadKey();
                         break;
 
+                    case "10":
+                        Console.Clear();
+                        Console.WriteLine("Role aanpassen");
+                        Console.WriteLine();
 
+                        foreach (Role r in role.GetRoles())
+                        {
+                            Console.WriteLine(r.GetId() + " " + r.GetTypeRole());
+                        }
+                        Console.WriteLine();
+
+                        Console.WriteLine("Voer het id in van de role die u wilt aanpassen");
+                        int roleIdE = int.Parse(Console.ReadLine());
+
+                        Console.WriteLine("Voer een type in");
+                        string typeE = Console.ReadLine();
+
+                        Console.WriteLine("Voer een beschrijving in");
+                        string descriptionRoleE = Console.ReadLine();
+
+                        Console.WriteLine("Voer een permissie in");
+                        string permissionE = Console.ReadLine();
+
+                        Role roleToEdit = new Role(roleIdE, typeE, descriptionRoleE, permissionE);
+
+                        roleToEdit.UpdateRole(roleToEdit);
+
+                        Console.WriteLine($"Type: {roleToEdit.GetTypeRole()}, is succesvol aangepast");
+                        Console.ReadKey();
+
+                        break;
+
+                    case "11":
+                        Console.Clear();
+                        Console.WriteLine("Role verwijderen");
+                        Console.WriteLine();
+
+                        foreach (Role r in role.GetRoles())
+                        {
+                            Console.WriteLine(r.GetId() + " " + r.GetTypeRole());
+                        }
+                        Console.WriteLine();
+
+                        Console.WriteLine("Voer het id in van de role die u wilt verwijderen");
+                        int roleIdD = int.Parse(Console.ReadLine());
+
+                        role.DeleteRole(roleIdD);
+
+                        Console.WriteLine($"Type: {role.GetTypeRole()} is verwijderd");
+
+                        Console.ReadKey();
+                        break;
+
+                    case "12":
+                        Console.Clear();
+                        Console.WriteLine("Roles in de database");
+                        Console.WriteLine();
+
+                        foreach (Role r in role.GetRoles())
+                        {
+                            Console.WriteLine(r.GetId() + " " + r.GetTypeRole());
+                        }
+
+                        Console.ReadLine();
+                        break;
+
+                    case "100":
+                        isRunning = false;
+                        break;
 
                     default:
                         Console.WriteLine("Foutieve invoer");

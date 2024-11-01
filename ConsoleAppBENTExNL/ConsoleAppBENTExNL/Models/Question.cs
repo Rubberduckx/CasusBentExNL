@@ -23,6 +23,8 @@ namespace ConsoleAppBENTExNL.Models
             gameId = _gameId;
         }
 
+        public int GetQuestionId() => id;
+
         public void CreateQuestion(Question question)
         {
 

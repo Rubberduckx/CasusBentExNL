@@ -20,6 +20,7 @@ namespace ConsoleAppBENTExNL.DAL
         public List<User> users;
         public List<Role> roles;
         public List<Area> areas;
+        public UserQuest userQuests;
 
         // Deze code implementeert een singleton-patroon voor de SQLDAL-klasse.  
         // De SQLDAL-klasse is verantwoordelijk voor databasebewerkingen met betrekking tot gebruikers,
@@ -45,6 +46,7 @@ namespace ConsoleAppBENTExNL.DAL
             users = new List<User>();
             roles = new List<Role>();
             areas = new List<Area>();
+            userQuests = new UserQuest();
 
             //connectionString
             connectionString = "*";
@@ -561,12 +563,12 @@ namespace ConsoleAppBENTExNL.DAL
 		public void CreateRole(Role role)
         {
             connection.Open();
-            SqlCommand command = new SqlCommand("INSERT INTO [Role] (type, description, permissions) " +
-                "VALUES (@type, @description, @permissions)", connection);
+            SqlCommand command = new SqlCommand("INSERT INTO [Role] (type, description, permission) " +
+                "VALUES (@type, @description, @permission)", connection);
 
             command.Parameters.AddWithValue("@type", role.GetTypeRole());
             command.Parameters.AddWithValue("@description", role.GetDescription());
-            command.Parameters.AddWithValue("@permissions", role.GetPermission());
+            command.Parameters.AddWithValue("@permission", role.GetPermission());
 
             command.ExecuteNonQuery();
 
@@ -591,16 +593,18 @@ namespace ConsoleAppBENTExNL.DAL
             connection.Open();
 
             SqlCommand command = new SqlCommand("UPDATE [Role] SET type = @type, description = @description, " +
-                "permissions = @permissions WHERE id = @id", connection);
+                "permission = @permission WHERE id = @id", connection);
 
             command.Parameters.AddWithValue("@id", role.GetId());
             command.Parameters.AddWithValue("@type", role.GetTypeRole());
             command.Parameters.AddWithValue("@description", role.GetDescription());
-            command.Parameters.AddWithValue("@permissions", role.GetPermission());
+            command.Parameters.AddWithValue("@permission", role.GetPermission());
 
             command.ExecuteNonQuery();
             connection.Close();
         }
+
+        /*  ==================== Get UserQuest by id ==================== */
 
     }
 }
