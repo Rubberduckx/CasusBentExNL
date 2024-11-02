@@ -114,5 +114,12 @@ namespace ConsoleAppBENTExNL.Models
 		{
 
 		}
-	}
+
+        public bool ValidateUser(string name, string password)
+        {
+            SQLDAL sqldal = SQLDAL.GetSingleton();
+            User user = sqldal.GetUserByUsernameAndPassword(name, password);
+            return user != null;
+        }
+    }
 }

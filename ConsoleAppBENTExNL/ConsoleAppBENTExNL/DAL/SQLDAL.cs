@@ -56,34 +56,35 @@ namespace ConsoleAppBENTExNL.DAL
         }
 
 		/*  ==================== Get all users from the database ==================== */
-		public List<User> GetUser()
-        { 
-            connection.Open();
-            users.Clear();
-            SqlCommand command = new SqlCommand("SELECT * FROM [User]", connection);
-            SqlDataReader reader = command.ExecuteReader();
-
-            while (reader.Read())
+		    public List<User> GetUser()
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                int id = reader.GetInt32(0);
-                string name = reader.GetString(1);
-                DateTime dateofBirth = reader.GetDateTime(2);
-                string email = reader.GetString(3);
-                string password = reader.GetString(4);
-                int xpLevel = reader.GetInt32(5);
-                int xp = reader.GetInt32(6);
-                int? routeId = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7);
-                Route route = routeId.HasValue ? GetRoute(routeId.Value) : null;
+                connection.Open();
+                users.Clear();
+                SqlCommand command = new SqlCommand("SELECT * FROM [User]", connection);
+                SqlDataReader reader = command.ExecuteReader();
 
-                users.Add(new User(id, name, dateofBirth, email, password, xpLevel, xp, route));
+                while (reader.Read())
+                {
+                    int id = reader.GetInt32(0);
+                    string name = reader.GetString(1);
+                    DateTime dateofBirth = reader.GetDateTime(2);
+                    string email = reader.GetString(3);
+                    string password = reader.GetString(4);
+                    int xpLevel = reader.GetInt32(5);
+                    int xp = reader.GetInt32(6);
+                    int? routeId = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7);
+                    Route route = routeId.HasValue ? GetRoute(routeId.Value) : null;
+
+                    users.Add(new User(id, name, dateofBirth, email, password, xpLevel, xp, route));
+                }
             }
-            connection.Close();
-            return users;
+                return users;
         }
 
-
-		/*  ==================== Create a user in the database ==================== */
-		public void CreateUser(User user)
+        /*  ==================== Create a user in the database ==================== */
+        public void CreateUser(User user)
         {
             connection.Open();
             SqlCommand command = new SqlCommand("INSERT INTO [User] (name, dateofBirth, email, password, xlLevel, xp, routeId) " +
@@ -602,6 +603,45 @@ namespace ConsoleAppBENTExNL.DAL
 
             command.ExecuteNonQuery();
             connection.Close();
+        }
+        public User GetUserByUsernameAndPassword(string name, string password)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    SqlCommand command = new SqlCommand(
+                        "SELECT * FROM [User] WHERE name = @name AND Password = @password",
+                        connection
+                    );
+                    command.Parameters.AddWithValue("@name", name);
+                    command.Parameters.AddWithValue("@password", password);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new User(
+                                reader.GetInt32(0),    // id
+                                reader.GetString(1),    // name
+                                reader.GetDateTime(2),  // dateofBirth
+                                reader.GetString(3),    // email
+                                reader.GetString(4),    // password
+                                reader.GetInt32(5),     // xpLevel
+                                reader.GetInt32(6),      // xp
+                                null                    // route
+                            );
+                        }
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Database error: {ex.Message}");
+                    return null;
+                }
+            }
         }
 
         /*  ==================== Get UserQuest by id ==================== */
