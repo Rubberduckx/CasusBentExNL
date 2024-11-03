@@ -20,7 +20,8 @@ namespace ConsoleAppBENTExNL.DAL
         public List<User> users;
         public List<Role> roles;
         public List<Area> areas;
-        public UserQuest userQuests;
+        public List<UserQuest> userQuests;
+        public List<Observation> observations;
 
         // Deze code implementeert een singleton-patroon voor de SQLDAL-klasse.  
         // De SQLDAL-klasse is verantwoordelijk voor databasebewerkingen met betrekking tot gebruikers,
@@ -46,7 +47,8 @@ namespace ConsoleAppBENTExNL.DAL
             users = new List<User>();
             roles = new List<Role>();
             areas = new List<Area>();
-            userQuests = new UserQuest();
+            userQuests = new List<UserQuest>();
+            observations = new List<Observation>();
 
             //connectionString
             connectionString = "*";
@@ -55,17 +57,44 @@ namespace ConsoleAppBENTExNL.DAL
             connection = new SqlConnection(connectionString);
         }
 
-		/*  ==================== Get all users from the database ==================== */
-		public List<User> GetUser()
-        { 
+        /*  ==================== Get all users from the database ==================== */
+        public List<User> GetUser()
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                users.Clear();
+                SqlCommand command = new SqlCommand("SELECT * FROM [User]", connection);
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int id = reader.GetInt32(0);
+                    string name = reader.GetString(1);
+                    DateTime dateofBirth = reader.GetDateTime(2);
+                    string email = reader.GetString(3);
+                    string password = reader.GetString(4);
+                    int xpLevel = reader.GetInt32(5);
+                    int xp = reader.GetInt32(6);
+                    int? routeId = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7);
+                    Route route = routeId.HasValue ? GetRoute(routeId.Value) : null;
+
+                    users.Add(new User(id, name, dateofBirth, email, password, xpLevel, xp, route));
+                }
+            }
+            return users;
+        }
+
+        public int GetUserById(int id)
+        {
             connection.Open();
-            users.Clear();
-            SqlCommand command = new SqlCommand("SELECT * FROM [User]", connection);
+            SqlCommand command = new SqlCommand("SELECT * FROM [User] WHERE id = @id", connection);
+            command.Parameters.AddWithValue("@id", id);
             SqlDataReader reader = command.ExecuteReader();
 
             while (reader.Read())
             {
-                int id = reader.GetInt32(0);
+                int userId = reader.GetInt32(0);
                 string name = reader.GetString(1);
                 DateTime dateofBirth = reader.GetDateTime(2);
                 string email = reader.GetString(3);
@@ -75,15 +104,15 @@ namespace ConsoleAppBENTExNL.DAL
                 int? routeId = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7);
                 Route route = routeId.HasValue ? GetRoute(routeId.Value) : null;
 
-                users.Add(new User(id, name, dateofBirth, email, password, xpLevel, xp, route));
+                users.Add(new User(userId, name, dateofBirth, email, password, xpLevel, xp, route));
             }
             connection.Close();
-            return users;
+
+            return id;
         }
 
-
-		/*  ==================== Create a user in the database ==================== */
-		public void CreateUser(User user)
+        /*  ==================== Create a user in the database ==================== */
+        public void CreateUser(User user)
         {
             connection.Open();
             SqlCommand command = new SqlCommand("INSERT INTO [User] (name, dateofBirth, email, password, xlLevel, xp, routeId) " +
@@ -269,25 +298,52 @@ namespace ConsoleAppBENTExNL.DAL
 			return observation;
 		}
 
+        public List<Observation> GetAllObservations()
+        {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("SELECT * FROM Observation", connection);
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                int id = reader.GetInt32(0);
+                double lat = reader.GetDouble(1);
+                double lng = reader.GetDouble(2);
+                string image = reader.GetString(3);
+                string description = reader.GetString(4);
+                Species species = reader.IsDBNull(5) ? null : GetSpecies(reader.GetInt32(5));
+
+                int userId = reader.GetInt32(6);
+                User user = GetUser().FirstOrDefault(u => u.GetId() == userId);
+
+                Area area = reader.IsDBNull(7) ? null : GetArea(reader.GetInt32(7));
+
+                observations.Add(new Observation(id, lat, lng, image, description, species, user, area));
+            }
+
+            connection.Close();
+
+            return observations;
+        }
+
 
 		/*  ==================== Create an Observation in the database ==================== */
 		public void CreateObservation(Observation observation)
 		{
 			connection.Open();
-			SqlCommand command = new SqlCommand("INSERT INTO [Observation] (lat, lng, image, description, speciesId, userId, areaId) " +
-				"VALUES (@lat, @lng, @image, @description, @speciesId, @userId, @areaId); " +
-				"SELECT SCOPE_IDENTITY();", connection);
+			SqlCommand command = new SqlCommand("INSERT INTO Observation (lat, long, image, description, specieId, userId, areaId) "
+                + "VALUES (@lat, @long, @image, @description, @specieId, @userId, @areaId);", connection);
 
 			command.Parameters.AddWithValue("@lat", observation.GetLat());
-			command.Parameters.AddWithValue("@lng", observation.GetLong());
+			command.Parameters.AddWithValue("@long", observation.GetLong());
 			command.Parameters.AddWithValue("@image", observation.GetImage());
 			command.Parameters.AddWithValue("@description", observation.GetDescription());
-			command.Parameters.AddWithValue("@speciesId", observation.GetSpecies());
+            command.Parameters.AddWithValue("@specieId", observation.GetSpeciesId()?.GetId() ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@userId", observation.GetUserId().GetId());  // User is verplicht
+            command.Parameters.AddWithValue("@areaId", observation.GetAreaId()?.GetId() ?? (object)DBNull.Value);
 
-			int id = Convert.ToInt32(command.ExecuteScalar());
-
-			connection.Close();
-
+            command.ExecuteNonQuery();
+            connection.Close();
 		}
 
 
@@ -303,9 +359,9 @@ namespace ConsoleAppBENTExNL.DAL
 			command.Parameters.AddWithValue("@lng", observation.GetLong());
 			command.Parameters.AddWithValue("@image", observation.GetImage());
 			command.Parameters.AddWithValue("@description", observation.GetDescription());
-			command.Parameters.AddWithValue("@speciesId", observation.GetSpecies().GetId());
-			command.Parameters.AddWithValue("@userId", observation.GetUser().GetId());
-			command.Parameters.AddWithValue("@areaId", observation.GetArea().GetId());
+			command.Parameters.AddWithValue("@speciesId", observation.GetSpeciesId().GetId());
+			command.Parameters.AddWithValue("@userId", observation.GetUserId().GetId());
+			command.Parameters.AddWithValue("@areaId", observation.GetAreaId().GetId());
 
 			command.ExecuteNonQuery();
 			connection.Close();
@@ -602,6 +658,45 @@ namespace ConsoleAppBENTExNL.DAL
 
             command.ExecuteNonQuery();
             connection.Close();
+        }
+        public User GetUserByUsernameAndPassword(string name, string password)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    SqlCommand command = new SqlCommand(
+                        "SELECT * FROM [User] WHERE name = @name AND Password = @password",
+                        connection
+                    );
+                    command.Parameters.AddWithValue("@name", name);
+                    command.Parameters.AddWithValue("@password", password);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new User(
+                                reader.GetInt32(0),    // id
+                                reader.GetString(1),    // name
+                                reader.GetDateTime(2),  // dateofBirth
+                                reader.GetString(3),    // email
+                                reader.GetString(4),    // password
+                                reader.GetInt32(5),     // xpLevel
+                                reader.GetInt32(6),      // xp
+                                null                    // route
+                            );
+                        }
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Database error: {ex.Message}");
+                    return null;
+                }
+            }
         }
 
         /*  ==================== Get UserQuest by id ==================== */
