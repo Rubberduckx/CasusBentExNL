@@ -14,18 +14,49 @@ namespace ConsoleAppBENTExNL.Models
 		private double lng;
 		private string image;
 		private string description;
-		private Species species;
-		private User user;
-		private Area area;
+		private Species speciesId;
+		private User userId;
+		private Area areaId;
 
-		public Observation(int id, double lat, double lng, Species species, User user, Area area, string image = "", string description = "")
+		public Observation()
+		{
+
+		}
+
+        public Observation(double lat, double lng, string image, string description, 
+			 User userId)
+        {
+            this.lat = lat;
+            this.lng = lng;
+			this.image = image;
+            this.description = description;
+            //this.speciesId = speciesId;
+            this.userId = userId;
+            //this.areaId = areaId;
+        }
+
+        public Observation(int id, double lat, double lng, string image, string description,
+             Species speciesId, User userId, Area areaId)
+        {
+			this.id = id;
+            this.lat = lat;
+            this.lng = lng;
+            this.image = image;
+            this.description = description;
+            this.speciesId = speciesId;
+            this.userId = userId;
+            this.areaId = areaId;
+        }
+
+        public Observation(int id, double lat, double lng, Species species, User user, Area area, 
+			string image = "", string description = "")
 		{
 			this.id = id;
 			this.lat = lat;
 			this.lng = lng;
-			this.species = species;
-			this.user = user;
-			this.area = area;
+			this.speciesId = species;
+			this.userId = user;
+			this.areaId = area;
 			this.image = image;
 			this.description = description;
 		}
@@ -35,9 +66,9 @@ namespace ConsoleAppBENTExNL.Models
 		public double GetLong() => lng;
 		public string GetImage() => image;
 		public string GetDescription() => description;
-		public Species GetSpecies() => species;
-		public User GetUser() => user;
-		public Area GetArea() => area;
+		public Species GetSpeciesId() => speciesId;
+		public User GetUserId() => userId;
+		public Area GetAreaId() => areaId;
 
 		public void CreateObservation(Observation observation)
 		{
@@ -45,7 +76,13 @@ namespace ConsoleAppBENTExNL.Models
 			sqldal.CreateObservation(observation);
 		}
 
-		public void GetObservation(int id)
+		public List<Observation> GetAllObservations()
+        {
+            SQLDAL sqldal = SQLDAL.GetSingleton();
+            return sqldal.GetAllObservations();
+        }
+
+        public void GetObservation(int id)
 		{
 			SQLDAL sqldal = SQLDAL.GetSingleton();
 			sqldal.GetObservation(id);

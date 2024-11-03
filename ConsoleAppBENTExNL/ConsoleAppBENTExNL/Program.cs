@@ -16,6 +16,8 @@ namespace ConsoleAppBENTExNL
             User user = new User();
             Area area = new Area();
             Role role = new Role();
+            Observation observation = new Observation();
+
             User loggedInUser = null;
 
             bool isRunning = true;
@@ -120,7 +122,10 @@ namespace ConsoleAppBENTExNL
                     Console.WriteLine("10: Role verwijderen");
                     Console.WriteLine("11: Roles ophalen");
                     Console.WriteLine();
-                    Console.WriteLine("12: Uitloggen");
+                    Console.WriteLine("12: Observation aanmaken");
+                    Console.WriteLine("15: Observations ophalen");
+                    Console.WriteLine();
+                    Console.WriteLine("99: Uitloggen");
                     Console.WriteLine("100: Exit application");
 
                     string input = Console.ReadLine();
@@ -385,6 +390,42 @@ namespace ConsoleAppBENTExNL
                             break;
 
                         case "12":
+                            Console.Clear();
+                            Console.WriteLine("Observation aanmaken");
+                            Console.WriteLine();
+                            Console.WriteLine("Geef een lattitude op:");
+                            double latO = double.Parse(Console.ReadLine());
+                            Console.WriteLine("Geef een longitude op:");
+                            double lonO = double.Parse(Console.ReadLine());
+                            Console.WriteLine("Geef een image op:");
+                            string imageO = Console.ReadLine();
+                            Console.WriteLine("Geef een beschrijving op:");
+                            string descriptionO = Console.ReadLine();
+
+                            Observation observationToAdd = new Observation(latO, lonO, imageO, descriptionO, loggedInUser);
+
+                            observationToAdd.CreateObservation(observationToAdd);
+
+                            Console.WriteLine($"Observation {observationToAdd.GetDescription()} is succesvol aangemaakt");
+                            Console.ReadKey();
+
+                            break;
+
+                        case "15":
+                            Console.Clear();
+                            Console.WriteLine("Observations in de database");
+                            Console.WriteLine();
+
+                            foreach (Observation o in observation.GetAllObservations())
+                            {
+                                Console.WriteLine(o.GetId() + " " + o.GetDescription()+ " UserId: " + o.GetUserId().GetId());
+                            }
+
+                            Console.ReadLine();
+
+                            break;
+
+                        case "99":
                             loggedInUser = null;
                             break;
 
