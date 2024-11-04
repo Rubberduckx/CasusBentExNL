@@ -13,6 +13,10 @@ namespace ConsoleAppBENTExNL
     {
         static void Main(string[] args)
         {
+
+            Dijkstra.ParkTestCase();
+            Console.ReadKey();
+
             User user = new User();
             Area area = new Area();
             Role role = new Role();
