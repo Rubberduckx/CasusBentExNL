@@ -22,6 +22,7 @@ namespace ConsoleAppBENTExNL.DAL
         public List<Area> areas;
         public List<UserQuest> userQuests;
         public List<Observation> observations;
+        public List<Answer> answers;
 
         // Deze code implementeert een singleton-patroon voor de SQLDAL-klasse.  
         // De SQLDAL-klasse is verantwoordelijk voor databasebewerkingen met betrekking tot gebruikers,
@@ -243,7 +244,7 @@ namespace ConsoleAppBENTExNL.DAL
         }
 
 
-		/*  ==================== Create a area in the database ==================== */
+		/*  ==================== Delete a area in the database ==================== */
 		public void DeleteArea(int id)
 		{
 			connection.Open();
@@ -701,7 +702,122 @@ namespace ConsoleAppBENTExNL.DAL
             }
         }
 
-        /*  ==================== Get UserQuest by id ==================== */
+		/*  ==================== Get UserQuest by id ==================== */
 
-    }
+
+
+		/*  ==================== Get all Answers from the database ==================== */
+		public List<Answer> GetAnswers()
+		{
+			answers.Clear();
+			connection.Open();
+			SqlCommand command = new SqlCommand("SELECT * FROM Answer", connection);
+			SqlDataReader reader = command.ExecuteReader();
+
+			while (reader.Read())
+			{
+				int id = reader.GetInt32(0);
+				string correctAnswer = reader.GetString(1);
+                int questionId = reader.GetInt32(3);
+
+                Question question = GetQuestion(questionId);
+
+				answers.Add(new Answer(id, correctAnswer, question));
+			}
+
+			connection.Close();
+
+			return answers;
+		}
+
+
+		/*  ==================== Create a Answer ==================== */
+		public void CreateAnswer(Answer answer)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("INSERT INTO [Answer] (correctAnswer, questionId) " +
+				"VALUES (@correctAnswer, @questionId)", connection);
+
+			command.Parameters.AddWithValue("@type", answer.GetType());
+			command.Parameters.AddWithValue("@questionId", answer.GetQuestionId());
+
+			command.ExecuteNonQuery();
+
+			connection.Close();
+		}
+
+
+		/*  ==================== Delete a role ==================== */
+		public void DeleteAnswer(int id)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("DELETE FROM [Answer] WHERE id = @id", connection);
+			command.Parameters.AddWithValue("@id", id);
+			command.ExecuteNonQuery();
+			connection.Close();
+		}
+
+
+		/*  ==================== Get a single question from the database where id is given id ==================== */
+		public Question GetQuestion(int id)
+		{
+			connection.Open();
+
+			SqlCommand command = new SqlCommand("SELECT * FROM Question WHERE id = @id", connection);
+			command.Parameters.AddWithValue("@id", id);
+			SqlDataReader reader = command.ExecuteReader();
+			while (reader.Read())
+			{
+				Question question = new Question(id, reader.GetString(1), reader.GetString(2), reader.GetInt32(4));
+				return question;
+
+			}
+			connection.Close();
+			throw new ArgumentException("No Area found at given id.", id.ToString());
+		}
+
+
+		/*  ==================== Create a question in the database ==================== */
+		public void CreateQuestion(Question question)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("INSERT INTO Question (questionText, questionType, gameId) VALUES " +
+				"(@questionText, @questionType, @gameId)", connection);
+
+			command.Parameters.AddWithValue("@questionText", question.GetQuestionText());
+			command.Parameters.AddWithValue("@questionType", question.GetQuestionType());
+			command.Parameters.AddWithValue("@gameId", question.GetGameId());
+
+			command.ExecuteNonQuery();
+
+			connection.Close();
+		}
+
+
+		/*  ==================== Delete a Question in the database ==================== */
+		public void DeleteQuestion(int id)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("DELETE FROM [Question] WHERE id = @id", connection);
+			command.Parameters.AddWithValue("@id", id);
+			command.ExecuteNonQuery();
+			connection.Close();
+		}
+
+
+		/*  ==================== Update a Question in the database ==================== */
+		public void UpdateQuestion(Question question)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("Update [Question] SET questionText = @questionText, questionType = @questionType, gameId = @gameId ", connection);
+
+			command.Parameters.AddWithValue("@questionText", question.GetQuestionText());
+			command.Parameters.AddWithValue("@questionType", question.GetQuestionType());
+			command.Parameters.AddWithValue("@gameId", question.GetGameId());
+
+			command.ExecuteNonQuery();
+
+			connection.Close();
+		}
+	}
 }
