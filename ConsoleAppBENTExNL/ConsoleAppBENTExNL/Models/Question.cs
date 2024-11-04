@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConsoleAppBENTExNL.DAL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,40 +25,33 @@ namespace ConsoleAppBENTExNL.Models
         }
 
         public int GetQuestionId() => id;
+        public string GetQuestionText() => questionText;
+        public string GetQuestionType() => questionType;
+        public int GetGameId() => gameId;
+
 
         public void CreateQuestion(Question question)
         {
+			SQLDAL sqldal = SQLDAL.GetSingleton();
+			sqldal.CreateQuestion(question);
+		}
 
-        }
-
-        public void DeleteQuestion(Question question)
+        public void DeleteQuestion(int id)
         {
-
-        }
+			SQLDAL sqldal = SQLDAL.GetSingleton();
+			sqldal.DeleteQuestion(id);
+		}
 
         public void UpdateQuestion(Question question)
         {
-
-        }
+			SQLDAL sqldal = SQLDAL.GetSingleton();
+			sqldal.CreateQuestion(question);
+		}
 
         public void GetQuestion(Question question)
         {
-
-        }
-
-        public string GetAnswers(string answer)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string GetUserQuests(string userQuest)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void CheckAnswer(Answer answer)
-        {
-
-        }
+			SQLDAL sqldal = SQLDAL.GetSingleton();
+			sqldal.CreateQuestion(question);
+		}
     }
 }
