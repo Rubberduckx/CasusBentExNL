@@ -123,6 +123,7 @@ namespace ConsoleAppBENTExNL
                     Console.WriteLine("11: Roles ophalen");
                     Console.WriteLine();
                     Console.WriteLine("12: Observation aanmaken");
+                    Console.WriteLine("13: Observation verwijderen");
                     Console.WriteLine("15: Observations ophalen");
                     Console.WriteLine();
                     Console.WriteLine("99: Uitloggen");
@@ -407,6 +408,28 @@ namespace ConsoleAppBENTExNL
                             observationToAdd.CreateObservation(observationToAdd);
 
                             Console.WriteLine($"Observation {observationToAdd.GetDescription()} is succesvol aangemaakt");
+                            Console.ReadKey();
+
+                            break;
+
+                        case "13":
+                            Console.Clear();
+                            Console.WriteLine("Observation verwijderen");
+                            Console.WriteLine();
+
+                            foreach (Observation o in observation.GetAllObservations())
+                            {
+                                Console.WriteLine(o.GetId() + " " + o.GetDescription());
+                            }
+                            Console.WriteLine();
+
+                            Console.WriteLine("Voer het id in van de observation die u wilt verwijderen");
+                            int observationId = int.Parse(Console.ReadLine());
+
+                            observation.DeleteObservation(observationId);
+
+                            Console.WriteLine($"Observation: {observation.GetDescription()} is verwijderd");
+
                             Console.ReadKey();
 
                             break;

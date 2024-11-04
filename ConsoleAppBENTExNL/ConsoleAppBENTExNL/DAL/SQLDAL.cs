@@ -51,7 +51,7 @@ namespace ConsoleAppBENTExNL.DAL
             observations = new List<Observation>();
 
             //connectionString
-            connectionString = "*";
+            connectionString = "**";
 
             // Create a new SqlConnection object
             connection = new SqlConnection(connectionString);
@@ -300,6 +300,7 @@ namespace ConsoleAppBENTExNL.DAL
 
         public List<Observation> GetAllObservations()
         {
+            observations.Clear();
             connection.Open();
 
             SqlCommand command = new SqlCommand("SELECT * FROM Observation", connection);
@@ -374,6 +375,7 @@ namespace ConsoleAppBENTExNL.DAL
 			connection.Open();
 			SqlCommand command = new SqlCommand("DELETE FROM [Observation] WHERE id = @id", connection);
 			command.Parameters.AddWithValue("@id", id);
+
 			command.ExecuteNonQuery();
 			connection.Close();
 		}
