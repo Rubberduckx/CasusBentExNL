@@ -26,28 +26,28 @@ namespace ConsoleAppBENTExNL.Pathfinding
 
             while (queue.Count > 0)
             {
-                Vertex u = queue.OrderBy(v => distance[v]).First();
-                if (u == endPoint) { 
-                    Vertex target = u;
-                    if (previous[u] != null || u == startPoint) {
-                        while (u != null)
+                Vertex closest = queue.OrderBy(v => distance[v]).First();
+                if (closest == endPoint) { 
+                    Vertex target = closest;
+                    if (previous[closest] != null || closest == startPoint) {
+                        while (closest != null)
                         {
-                            stack.Push(u);
-                            u = previous[u];
+                            stack.Push(closest);
+                            closest = previous[closest];
                         }
                         return stack;
                     }
                 }
-                queue.Remove(u);
-                foreach (Vertex v in u.GetNeighbors().Keys)
+                queue.Remove(closest);
+                foreach (Vertex neighbor in closest.GetNeighbors().Keys)
                 {
-                    if (queue.Contains(v))
+                    if (queue.Contains(neighbor))
                     {
-                        int alt = distance[u] + u.GetDistanceToNeighbor(v);
-                        if (alt < distance[v])
+                        int alt = distance[closest] + closest.GetDistanceToNeighbor(neighbor);
+                        if (alt < distance[neighbor])
                         {
-                            distance[v] = alt;
-                            previous[v] = u;
+                            distance[neighbor] = alt;
+                            previous[neighbor] = closest;
                         }
                     }
                 }
