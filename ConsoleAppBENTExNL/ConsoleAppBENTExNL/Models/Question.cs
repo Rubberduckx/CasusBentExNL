@@ -28,9 +28,9 @@ namespace ConsoleAppBENTExNL.Models
         public string GetQuestionText() => questionText;
         public string GetQuestionType() => questionType;
         public int GetGameId() => gameId;
+		public string GetCorrectAnswer() => answers[0].GetCorrectAnswer();
 
-
-        public void CreateQuestion(Question question)
+		public void CreateQuestion(Question question)
         {
 			SQLDAL sqldal = SQLDAL.GetSingleton();
 			sqldal.CreateQuestion(question);

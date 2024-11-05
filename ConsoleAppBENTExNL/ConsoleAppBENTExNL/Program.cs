@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,16 +12,16 @@ namespace ConsoleAppBENTExNL
 {
     internal class Program
     {
-        static void Main(string[] args)
+
+		static void Main(string[] args)
         {
             User user = new User();
             Area area = new Area();
             Role role = new Role();
             Observation observation = new Observation();
             Species species = new Species();
-
-            User loggedInUser = null;
-            Species FoundSpecies = null;
+			User loggedInUser = null;
+			Species FoundSpecies = null;
 
             bool isRunning = true;
 
@@ -39,108 +40,54 @@ namespace ConsoleAppBENTExNL
                     switch (input)
                     {
                         case "1":
-                            Console.Clear();
-                            Console.WriteLine("Inloggen");
-                            Console.WriteLine();
-
-                            Console.WriteLine("Voer uw gebruikersnaam in");
-                            string username = Console.ReadLine();
-
-                            Console.WriteLine("Voer uw wachtwoord in");
-                            string password = Console.ReadLine();
-
-                            if (user.ValidateUser(username, password))
-                            {
-                                // Zoeken naar de gebruiker in de database
-                                loggedInUser = user.GetUser().FirstOrDefault(u => u.GetName() == username);
-                                if (loggedInUser != null)
-                                {
-                                    Console.WriteLine();
-                                    Console.WriteLine($"Welkom, {loggedInUser.GetName()}!");
-                                    Console.WriteLine("Druk op een toets om door te gaan");
-                                    Console.ReadKey();
-                                    continue;
-                                }
-                            }
-
-                            Console.WriteLine("Ongeldige gebruikersnaam of wachtwoord");
-                            Console.WriteLine("Druk op een toets om opnieuw te proberen");
-                            Console.ReadKey();
-
+                            LoginUser(ref loggedInUser);
                             break;
 
-                        case "2":
-                            Console.Clear();
-                            Console.WriteLine("Gebruiker aanmaken");
-                            Console.WriteLine();
-
-                            Console.WriteLine("Voer een naam in");
-                            string name = Console.ReadLine();
-
-                            Console.WriteLine("Voer uw geboorte datum in");
-                            DateTime dateofBirth = DateTime.Parse(Console.ReadLine());
-
-                            Console.WriteLine("Voer uw email in");
-                            string email = Console.ReadLine();
-
-                            Console.WriteLine("Voer uw wachtwoord in");
-                            string passwordU = Console.ReadLine();
-
-                            int xpLevel = 10;
-                            int xp = 50;
-
-                            User userToAdd = new User(name, dateofBirth, email, passwordU, xpLevel, xp);
-
-                            // Opslaan van object in database
-                            user.CreateUser(userToAdd);
-
-                            Console.WriteLine($"Name: {userToAdd.GetName()}, is succesvol aangemaakt");
-                            Console.ReadKey();
-                            break;
-
-                        case "100":
-                            isRunning = false;
-                            break;
-
-                        default:
-                            Console.WriteLine("Foutieve invoer");
-                            Console.ReadKey();
-                            break;
-                    }
+						case "2":
+							CreateNewUser();
+							break;
+					}
                 }
 
                 else
                 {
                     Console.Clear();
-                    Console.WriteLine($"Ingelogd als: {loggedInUser.GetName()}");
-                    Console.WriteLine();
-                    Console.WriteLine("1: Gebruiker aanpassen");
-                    Console.WriteLine("2: Gebruiker verwijderen");
-                    Console.WriteLine("3: Gebruikers ophalen");
-                    Console.WriteLine();
-                    Console.WriteLine("4: Area aanmaken");
-                    Console.WriteLine("5: Area aanpassen");
-                    Console.WriteLine("6: Area verwijderen");
-                    Console.WriteLine("7: Areas ophalen");
-                    Console.WriteLine();
-                    Console.WriteLine("8: Role aanmaken");
-                    Console.WriteLine("9: Role aanpassen");
-                    Console.WriteLine("10: Role verwijderen");
-                    Console.WriteLine("11: Roles ophalen");
-                    Console.WriteLine();
-                    Console.WriteLine("12: Specie + Observation aanmaken");
-                    Console.WriteLine("13: Observation verwijderen");
-                    Console.WriteLine("15: Observations ophalen");
-                    Console.WriteLine("17: Species ophalen");
-                    Console.WriteLine();
-                    Console.WriteLine("80: Dijkstra Algo");
-                    Console.WriteLine();
-                    Console.WriteLine("99: Uitloggen");
-                    Console.WriteLine("100: Exit application");
+					string[] menuOptions = {
+		                "1: Gebruiker aanpassen",
+		                "2: Gebruiker verwijderen",
+		                "3: Gebruikers ophalen",
+		                "",
+		                "4: Area aanmaken",
+		                "5: Area aanpassen",
+		                "6: Area verwijderen",
+		                "7: Areas ophalen",
+		                "",
+		                "8: Role aanmaken",
+		                "9: Role aanpassen",
+		                "10: Role verwijderen",
+		                "11: Roles ophalen",
+		                "",
+		                "12: Specie + Observation aanmaken",
+		                "13: Observation verwijderen",
+		                "15: Observations ophalen",
+		                "17: Species ophalen",
+                        "",
+                        "18: Game spelen",
+		                "",
+		                "80: Dijkstra Algo",
+		                "",
+		                "99: Uitloggen",
+		                "100: Exit application"
+	                };
 
-                    string input = Console.ReadLine();
+					foreach (string option in menuOptions)
+					{
+						Console.WriteLine(option);
+					}
 
-                    switch (input)
+					string input = Console.ReadLine();
+
+					switch (input)
                     {
                         case "1":
                             Console.Clear();
@@ -534,6 +481,9 @@ namespace ConsoleAppBENTExNL
                             Console.ReadLine();
                             break;
 
+                        case "18":
+                            StartGame();
+                            break;
 
                         case "80":
                             Console.Clear();
@@ -558,7 +508,121 @@ namespace ConsoleAppBENTExNL
             }
         }
 
-        public static void DijkstraTest()
+		/*  ==================== Helping method for returning strings instead of multiple console writelines for requesting data ==================== */
+		static string RequestInput(string prompt)
+		{
+			Console.WriteLine(prompt);
+			return Console.ReadLine();
+		}
+
+		/*  ==================== Method for creating a new user ==================== */
+		static void CreateNewUser()
+		{
+			User user = new User();
+
+			Console.Clear();
+			Console.WriteLine("Gebruiker aanmaken");
+			Console.WriteLine();
+
+			// Request a name, birthdate, email and password
+			string name = RequestInput("Voer een naam in");
+			DateTime dateOfBirth = DateTime.Parse(RequestInput("Voer uw geboortedatum in (dd-mm-jjjj)"));
+			string email = RequestInput("Voer uw email in");
+			string passwordU = RequestInput("Voer uw wachtwoord in");
+
+			// Standard xp data
+			int xpLevel = 10;
+			int xp = 50;
+
+			// Call CreateUser method and give the userToAdd with it
+			User userToAdd = new User(name, dateOfBirth, email, passwordU, xpLevel, xp);
+			user.CreateUser(userToAdd);
+
+			Console.WriteLine($"Naam: {userToAdd.GetName()} is succesvol aangemaakt");
+			Console.ReadKey();
+		}
+
+
+		/*  ==================== Method for logging in ==================== */
+		static void LoginUser(ref User loggedInUser)
+		{
+			User user = new User();
+
+            // Check if user in logged in
+			bool isLoggedIn = false;
+
+			while (!isLoggedIn)
+			{
+				Console.Clear();
+				Console.WriteLine("Inloggen");
+				Console.WriteLine();
+
+
+                // Request a username and password
+				string username = RequestInput("Voer uw gebruikersnaam in:");
+				string password = RequestInput("Voer uw wachtwoord in:");
+
+				if (user.ValidateUser(username, password))
+				{
+					// Check if username and password exist in database
+					loggedInUser = user.GetUser().FirstOrDefault(u => u.GetName() == username);
+					if (loggedInUser != null)
+					{
+						Console.WriteLine();
+						Console.WriteLine($"Welkom, {loggedInUser.GetName()}!");
+						Console.WriteLine("Druk op een toets om door te gaan");
+						Console.ReadKey();
+
+                        // set logged in to true
+						isLoggedIn = true;
+					}
+				}
+				else
+				{
+					Console.WriteLine("Ongeldige gebruikersnaam of wachtwoord");
+					Console.WriteLine("Druk op een toets om opnieuw te proberen");
+					Console.ReadKey();
+				}
+			}
+		}
+
+        static void StartGame()
+        {
+			
+            List<Game> games = new List<Game>();
+            Game game = new Game();
+            games.Clear();
+
+			while (true)
+			{
+                games = game.GetGames();
+				Console.WriteLine("Kies een spel om te spelen:");
+				for (int i = 0; i < games.Count; i++)
+				{
+					Console.WriteLine($"{i + 1}: Spel {games[i]}");
+				}
+				Console.WriteLine("99: Exit");
+				Console.Write("Voer je keuze in: ");
+
+				string input = Console.ReadLine();
+				if (input == "99") break;
+
+				int gameChoice;
+				if (int.TryParse(input, out gameChoice) && gameChoice >= 1 && gameChoice <= games.Count)
+				{
+					games[gameChoice - 1].PlayGame(); // Start het gekozen spel
+					Console.WriteLine("Druk op een toets om verder te gaan.");
+					Console.ReadKey();
+				}
+				else
+				{
+					Console.WriteLine("Ongeldige keuze. Probeer het opnieuw.");
+					Console.ReadKey();
+				}
+			}
+		}
+
+		public static void DijkstraTest()
         {
             Graph graph = new Graph();
             Vertex a = new Vertex("A");
@@ -596,3 +660,13 @@ namespace ConsoleAppBENTExNL
         }
     }
 }
+
+
+
+
+
+
+/* ==================== Bronnen ==================== */
+
+// Helper methode voor een string in plaats van meerdere console writelines.
+// https://stackoverflow.com/questions/73018976/with-only-one-console-writeline-how-can-i-give-multiple-console-writelines
