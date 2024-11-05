@@ -23,6 +23,7 @@ namespace ConsoleAppBENTExNL.DAL
         public List<UserQuest> userQuests;
         public List<Observation> observations;
         public List<Answer> answers;
+        public List<Species> speciesL;
 
         // Deze code implementeert een singleton-patroon voor de SQLDAL-klasse.  
         // De SQLDAL-klasse is verantwoordelijk voor databasebewerkingen met betrekking tot gebruikers,
@@ -50,9 +51,10 @@ namespace ConsoleAppBENTExNL.DAL
             areas = new List<Area>();
             userQuests = new List<UserQuest>();
             observations = new List<Observation>();
+            speciesL = new List<Species>();
 
             //connectionString
-            connectionString = "**";
+            connectionString = "*";
 
             // Create a new SqlConnection object
             connection = new SqlConnection(connectionString);
@@ -82,7 +84,10 @@ namespace ConsoleAppBENTExNL.DAL
 
                     users.Add(new User(id, name, dateofBirth, email, password, xpLevel, xp, route));
                 }
+                
             }
+            connection.Close();
+
             return users;
         }
 
@@ -302,28 +307,33 @@ namespace ConsoleAppBENTExNL.DAL
         public List<Observation> GetAllObservations()
         {
             observations.Clear();
-            connection.Open();
 
-            SqlCommand command = new SqlCommand("SELECT * FROM Observation", connection);
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                int id = reader.GetInt32(0);
-                double lat = reader.GetDouble(1);
-                double lng = reader.GetDouble(2);
-                string image = reader.GetString(3);
-                string description = reader.GetString(4);
-                Species species = reader.IsDBNull(5) ? null : GetSpecies(reader.GetInt32(5));
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT * FROM Observation", connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int id = reader.GetInt32(0);
+                            double lat = reader.GetDouble(1);
+                            double lng = reader.GetDouble(2);
+                            string image = reader.GetString(3);
+                            string description = reader.GetString(4);
+                            Species species = reader.IsDBNull(5) ? null : GetSpecies(reader.GetInt32(5));
 
-                int userId = reader.GetInt32(6);
-                User user = GetUser().FirstOrDefault(u => u.GetId() == userId);
+                            int userId = reader.GetInt32(6);
+                            User user = GetUser().FirstOrDefault(u => u.GetId() == userId);
 
-                Area area = reader.IsDBNull(7) ? null : GetArea(reader.GetInt32(7));
+                            Area area = reader.IsDBNull(7) ? null : GetArea(reader.GetInt32(7));
 
-                observations.Add(new Observation(id, lat, lng, image, description, species, user, area));
+                            observations.Add(new Observation(id, lat, lng, image, description, species, user, area));
+                        }
+                    }
+                }
             }
-
-            connection.Close();
 
             return observations;
         }
@@ -340,7 +350,7 @@ namespace ConsoleAppBENTExNL.DAL
 			command.Parameters.AddWithValue("@long", observation.GetLong());
 			command.Parameters.AddWithValue("@image", observation.GetImage());
 			command.Parameters.AddWithValue("@description", observation.GetDescription());
-            command.Parameters.AddWithValue("@specieId", observation.GetSpeciesId()?.GetId() ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@specieId", observation.GetSpecieId().GetId());// Specie is verplicht
             command.Parameters.AddWithValue("@userId", observation.GetUserId().GetId());  // User is verplicht
             command.Parameters.AddWithValue("@areaId", observation.GetAreaId()?.GetId() ?? (object)DBNull.Value);
 
@@ -354,14 +364,14 @@ namespace ConsoleAppBENTExNL.DAL
 		{
 			connection.Open();
 			SqlCommand command = new SqlCommand("UPDATE [Observation] SET lat = @lat, lng = @lng, image = @image, description = @description, " +
-				"speciesId = @speciesId, userId = @userId, areaId = @areaId WHERE id = @id", connection);
+				"specieId = @specieId, userId = @userId, areaId = @areaId WHERE id = @id", connection);
 
 			command.Parameters.AddWithValue("@id", observation.GetId());
 			command.Parameters.AddWithValue("@lat", observation.GetLat());
 			command.Parameters.AddWithValue("@lng", observation.GetLong());
 			command.Parameters.AddWithValue("@image", observation.GetImage());
 			command.Parameters.AddWithValue("@description", observation.GetDescription());
-			command.Parameters.AddWithValue("@speciesId", observation.GetSpeciesId().GetId());
+			command.Parameters.AddWithValue("@specieId", observation.GetSpecieId().GetId());
 			command.Parameters.AddWithValue("@userId", observation.GetUserId().GetId());
 			command.Parameters.AddWithValue("@areaId", observation.GetAreaId().GetId());
 
@@ -386,6 +396,7 @@ namespace ConsoleAppBENTExNL.DAL
 		public Species GetSpecies(int id)
 		{
 			connection.Open();
+
 			SqlCommand command = new SqlCommand("SELECT * FROM Species WHERE id = @id", connection);
 			command.Parameters.AddWithValue("@id", id);
 			SqlDataReader reader = command.ExecuteReader();
@@ -407,21 +418,43 @@ namespace ConsoleAppBENTExNL.DAL
 			return species;
 		}
 
+        public List<Species> GetAllSpecies()
+        {
+            connection.Open();
+            speciesL.Clear();
+            SqlCommand command = new SqlCommand("SELECT * FROM Species", connection);
+            SqlDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                int speciesId = reader.GetInt32(0);
+                string name = reader.GetString(1);
+                string type = reader.GetString(2);
+                string description = reader.GetString(3);
+                int size = reader.GetInt32(4);
+
+                speciesL.Add(new Species(speciesId, name, type, description, size));
+            }
+            connection.Close();
+
+            return speciesL;
+        }
+
 
 		/* ==================== Create a Species in the database ==================== */
 		public void CreateSpecies(Species species)
 		{
 			connection.Open();
-			SqlCommand command = new SqlCommand("INSERT INTO [Species] (name, type, description, size) " +
-				"VALUES (@name, @type, @description, @size); SELECT SCOPE_IDENTITY();", connection);
+			SqlCommand command = new SqlCommand("INSERT INTO Species (name, type, description, size) " +
+				"VALUES (@name, @type, @description, @size)", connection);
 
 			command.Parameters.AddWithValue("@name", species.GetName());
 			command.Parameters.AddWithValue("@type", species.GetType());
 			command.Parameters.AddWithValue("@description", species.GetDescription());
 			command.Parameters.AddWithValue("@size", species.GetSize());
 
-			int id = Convert.ToInt32(command.ExecuteScalar());
-			connection.Close();
+            command.ExecuteNonQuery();
+            connection.Close();
 		}
 
 		/* ==================== Update a Species in the database ==================== */
