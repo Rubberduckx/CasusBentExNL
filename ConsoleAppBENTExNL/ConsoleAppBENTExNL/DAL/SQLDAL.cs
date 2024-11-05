@@ -53,14 +53,17 @@ namespace ConsoleAppBENTExNL.DAL
             userQuests = new List<UserQuest>();
             observations = new List<Observation>();
             speciesL = new List<Species>();
+            games = new List<Game>();
 
             //connectionString
-            connectionString = "Data Source=DESKTOP-FS0T5UA;Initial Catalog=BentCasus;Integrated Security=True;TrustServerCertificate=True";
+            connectionString = "*";
 
             // Create a new SqlConnection object
             connection = new SqlConnection(connectionString);
         }
 
+
+        // NOTE: USER RELATED METHODS
         /*  ==================== Get all users from the database ==================== */
         public List<User> GetUser()
         {
@@ -79,7 +82,7 @@ namespace ConsoleAppBENTExNL.DAL
                     string email = reader.GetString(3);
                     string password = reader.GetString(4);
                     int xpLevel = reader.GetInt32(5);
-                    int xp = reader.GetInt32(6);
+                    int xp = reader.GetInt32(6); 
                     int? routeId = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7);
                     Route route = routeId.HasValue ? GetRoute(routeId.Value) : null;
 
@@ -188,7 +191,7 @@ namespace ConsoleAppBENTExNL.DAL
             connection.Close();
         }
 
-
+        // NOTE: AREA RELATED METHODS
 		/*  ==================== Get a single area from the database where id is given id ==================== */
 		public Area GetArea(int id)
 		{
@@ -277,7 +280,7 @@ namespace ConsoleAppBENTExNL.DAL
 			connection.Close();
 		}
 
-
+        // NOTE: OBSERVATION RELATED METHODS
 		/*  ==================== Get a single Observation from the database where id is given id ==================== */
 		public Observation GetObservation(int id)
 		{
@@ -333,7 +336,9 @@ namespace ConsoleAppBENTExNL.DAL
                         }
                     }
                 }
+                
             }
+            connection.Close();
 
             return observations;
         }
@@ -391,7 +396,7 @@ namespace ConsoleAppBENTExNL.DAL
 			connection.Close();
 		}
 
-
+        // NOTE: SPECIE RELATED METHODS
 		/* ==================== Get a single Species from the database where id is given ==================== */
 		public Species GetSpecies(int id)
 		{
@@ -484,6 +489,7 @@ namespace ConsoleAppBENTExNL.DAL
 			connection.Close();
 		}
 
+        // NOTE: POI RELATED METHODS
 		/*  ==================== Get a single POI from the database ==================== */
 		public PointOfInterest GetPOI(int id) {
             connection.Open();
@@ -502,7 +508,7 @@ namespace ConsoleAppBENTExNL.DAL
             throw new ArgumentException("No PointOfInterest found at given id.", id.ToString());
         }
 
-
+        // NOTE: ROUTEPOINT RELATED METHODS
 		/*  ==================== Get a single routepoint from the database where id is given id ==================== */
 		public RoutePoint GetRoutePoint(int id)
         {
@@ -522,7 +528,7 @@ namespace ConsoleAppBENTExNL.DAL
             throw new ArgumentException("No RoutePoint found at given id.", id.ToString());
         }
 
-
+        // NOTE: ROUTE RELATED METHODS
 		/*  ==================== Get a single route from the database where id is given id ==================== */
 		public Route GetRoute(int id)
         {
@@ -557,7 +563,7 @@ namespace ConsoleAppBENTExNL.DAL
                 Route route = new Route(id, reader.GetString(1), area);
                 routes.Add(route);
             }
-
+            connection.Close();
             return routes;
         }
 
@@ -600,7 +606,7 @@ namespace ConsoleAppBENTExNL.DAL
             command.ExecuteNonQuery();
             connection.Close();
         }
-
+        // NOTE: ROLE RELATED METHODS
         /*  ==================== Get all roles from the database ==================== */
         public List<Role> GetAllRoles()
         {
@@ -624,34 +630,34 @@ namespace ConsoleAppBENTExNL.DAL
         }
 
 
-		/*  ==================== Get a single role from the database where id is given id ==================== */
-		public Role GetRoleById(int id)
+        /*  ==================== Get a single role from the database where id is given id ==================== */
+        public Role GetRoleById(int id)
         {
-            connection.Open();
+            Role role = null;
 
-            SqlCommand command = new SqlCommand("SELECT * FROM Role WHERE id = @id", connection);
-            command.Parameters.AddWithValue("@id", id);
-            SqlDataReader reader = command.ExecuteReader();
-            
-            while (reader.Read())
+            // Using a local connection
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                id = reader.GetInt32(0);
-                string type = reader.GetString(1);
-                string description = reader.GetString(2);
-                string permissions = reader.GetString(3);
-                Role role = new Role(id, type, description, permissions);
-                
-                return role;
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT * FROM Role WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    string type = reader.GetString(1);
+                    string description = reader.GetString(2);
+                    string permissions = reader.GetString(3);
+                    role = new Role(id, type, description, permissions);
+                }
             }
 
-            connection.Close();
-
-            throw new ArgumentException("No Role found at given id.", id.ToString());
+            return role;
         }
 
 
-		/*  ==================== Create a role ==================== */
-		public void CreateRole(Role role)
+        /*  ==================== Create a role ==================== */
+        public void CreateRole(Role role)
         {
             connection.Open();
             SqlCommand command = new SqlCommand("INSERT INTO [Role] (type, description, permission) " +
@@ -694,49 +700,116 @@ namespace ConsoleAppBENTExNL.DAL
             command.ExecuteNonQuery();
             connection.Close();
         }
+
+        /*  ==================== Delete a awnser ==================== */
+		public void DeleteAnswer(int id)
+		{
+			connection.Open();
+			SqlCommand command = new SqlCommand("DELETE FROM [Answer] WHERE id = @id", connection);
+			command.Parameters.AddWithValue("@id", id);
+			command.ExecuteNonQuery();
+			connection.Close();
+		}
+
+        // NOTE: LOGIN RELATED METHODS
         public User GetUserByUsernameAndPassword(string name, string password)
         {
+            
+                connection.Open();
+                SqlCommand command = new SqlCommand(
+                    "SELECT * FROM [User] WHERE name = @name AND Password = @password",
+                    connection
+                );
+                command.Parameters.AddWithValue("@name", name);
+                command.Parameters.AddWithValue("@password", password);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return new User(
+                            reader.GetInt32(0),    // id
+                            reader.GetString(1),    // name
+                            reader.GetDateTime(2),  // dateofBirth
+                            reader.GetString(3),    // email
+                            reader.GetString(4),    // password
+                            reader.GetInt32(5),     // xpLevel
+                            reader.GetInt32(6),     // xp
+                            null                    // route
+                        );
+                    }
+                connection.Close();
+
+                return null;
+                }
+        }
+
+        // FIXME: USERROLE RELATED METHODS
+        /*  ==================== AddUserRole ==================== */
+        public void AddUserRole(int userId, int roleId)
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("INSERT INTO UserRole (userId, roleId) VALUES (@userId, @roleId)", connection);
+            command.Parameters.AddWithValue("@userId", userId);
+            command.Parameters.AddWithValue("@roleId", roleId);
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+
+        /*  ==================== RemoveUserRole ==================== */
+        public void RemoveUserRole(int userId, int roleId)
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("DELETE FROM UserRole WHERE userId = @userId AND roleId = @roleId", connection);
+            command.Parameters.AddWithValue("@userId", userId);
+            command.Parameters.AddWithValue("@roleId", roleId);
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+
+        /*  ==================== GetUserRoles ==================== */
+        public List<Role> GetUserRoles(int userId)
+        {
+            List<Role> roles = new List<Role>();
+
+            // Using a local connection
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                try
-                {
-                    connection.Open();
-                    SqlCommand command = new SqlCommand(
-                        "SELECT * FROM [User] WHERE name = @name AND Password = @password",
-                        connection
-                    );
-                    command.Parameters.AddWithValue("@name", name);
-                    command.Parameters.AddWithValue("@password", password);
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT * FROM UserRole WHERE userId = @userId", connection);
+                command.Parameters.AddWithValue("@userId", userId);
+                SqlDataReader reader = command.ExecuteReader();
 
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            return new User(
-                                reader.GetInt32(0),    // id
-                                reader.GetString(1),    // name
-                                reader.GetDateTime(2),  // dateofBirth
-                                reader.GetString(3),    // email
-                                reader.GetString(4),    // password
-                                reader.GetInt32(5),     // xpLevel
-                                reader.GetInt32(6),      // xp
-                                null                    // route
-                            );
-                        }
-                        return null;
-                    }
-                }
-                catch (Exception ex)
+                while (reader.Read())
                 {
-                    Console.WriteLine($"Database error: {ex.Message}");
-                    return null;
+                    int roleId = reader.GetInt32(2);
+                    roles.Add(GetRoleById(roleId)); // Fetch each role independently
                 }
             }
+
+            return roles;
+        }
+
+        /*  ==================== CheckUserPermissions==================== */
+        public bool CheckUserPermissions(int userId, string type)
+        {
+            List<Role> roles = GetUserRoles(userId);
+            if (roles == null) return false;
+
+            foreach (Role role in roles)
+            {
+                if (role != null && role.GetTypeRole().Contains(type))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
 
-		/*  ==================== Get all Answers from the database ==================== */
-		public List<Answer> GetAnswers()
+        // NOTE: AWNSER RELATED METHODS
+        /*  ==================== Get all Answers from the database ==================== */
+        public List<Answer> GetAnswers()
 		{
 			answers.Clear();
 			connection.Open();
@@ -775,18 +848,7 @@ namespace ConsoleAppBENTExNL.DAL
 			connection.Close();
 		}
 
-
-		/*  ==================== Delete a role ==================== */
-		public void DeleteAnswer(int id)
-		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("DELETE FROM [Answer] WHERE id = @id", connection);
-			command.Parameters.AddWithValue("@id", id);
-			command.ExecuteNonQuery();
-			connection.Close();
-		}
-
-
+        //NOTE: QUESTION RELATED METHODS
 		/*  ==================== Get a single question from the database where id is given id ==================== */
 		public Question GetQuestion(int id)
 		{
@@ -849,29 +911,63 @@ namespace ConsoleAppBENTExNL.DAL
 			connection.Close();
 		}
 
-
+        // NOTE: GAME RELATED METHODS
 		/*  ==================== Get all Games from the database ==================== */
 		public List<Game> GetGames()
 		{
-			using (SqlConnection connection = new SqlConnection(connectionString))
-			{
-				connection.Open(); // Verbinding openen
+            games.Clear();
+            connection.Open(); 
 
-				// SQL-commando om alle spellen op te halen
 				SqlCommand command = new SqlCommand("SELECT * FROM Game", connection);
 				SqlDataReader reader = command.ExecuteReader();
 
 				while (reader.Read())
 				{
 					int id = reader.GetInt32(0);
-					Route route = GetRoute(id); // Veronderstelling: De methode GetRoute haalt een route op die bij het spel hoort
+                    string name = reader.GetString(1);
+                    int? routeId = reader.IsDBNull(2) ? (int?)null : reader.GetInt32(2);
+                    Route route = routeId.HasValue ? GetRoute(routeId.Value) : null;
 
-					games.Add(new Game(id, route)); // Voeg het nieuwe spel toe aan de lijst
+					games.Add(new Game(id, name, route));
 				}
-			} // Verbinding wordt automatisch gesloten aan het einde van de using-block
+            connection.Close();
+			return games;
+        }
 
-			return games; // Retourneer de lijst met spellen
-		}
+        public void CreateGame(Game game) 
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("INSERT INTO Game (name, routeId) VALUES (@name, @routeId)", connection);
 
-	}
+            command.Parameters.AddWithValue("@name", game.getName());
+            command.Parameters.AddWithValue("@routeId", game.getRouteId()?.GetId() ?? (object)DBNull.Value);
+
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+
+        public void UpdateGame(Game game)
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("UPDATE Game SET name = @name, routeId = @routeId WHERE id = @id", connection);
+
+            command.Parameters.AddWithValue("@id", game.getId());
+            command.Parameters.AddWithValue("@name", game.getName());
+            command.Parameters.AddWithValue("@routeId", game.getRouteId()?.GetId() ?? (object)DBNull.Value);
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+
+        public void DeleteGame(int id)
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("DELETE FROM Game WHERE id = @id", connection);
+
+            command.Parameters.AddWithValue("@id", id);
+
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+
+    }
 }

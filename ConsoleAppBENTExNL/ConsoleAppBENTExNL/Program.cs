@@ -1,4 +1,5 @@
-﻿using ConsoleAppBENTExNL.Models;
+﻿using ConsoleAppBENTExNL.DAL;
+using ConsoleAppBENTExNL.Models;
 using ConsoleAppBENTExNL.Pathfinding;
 using System;
 using System.Collections.Generic;
@@ -12,18 +13,19 @@ namespace ConsoleAppBENTExNL
 {
     internal class Program
     {
-
-		static void Main(string[] args)
+        static void Main(string[] args)
         {
             User user = new User();
             Area area = new Area();
             Role role = new Role();
             Observation observation = new Observation();
             Species species = new Species();
-			User loggedInUser = null;
-			Species FoundSpecies = null;
-
+            Game game = new Game();
+            UserRole userRole = new UserRole();
+            User loggedInUser = null;
+            Species FoundSpecies = null;
             bool isRunning = true;
+            SQLDAL sqlDAL = SQLDAL.GetSingleton(); // Singleton instance of SQLDAL
 
             while (isRunning)
             {
@@ -32,9 +34,7 @@ namespace ConsoleAppBENTExNL
                     Console.Clear();
                     Console.WriteLine("1: Inloggen");
                     Console.WriteLine("2: Account aanmaken");
-                    Console.WriteLine();
                     Console.WriteLine("100: Exit application");
-
                     string input = Console.ReadLine();
 
                     switch (input)
@@ -42,52 +42,59 @@ namespace ConsoleAppBENTExNL
                         case "1":
                             LoginUser(ref loggedInUser);
                             break;
-
-						case "2":
-							CreateNewUser();
-							break;
-					}
+                        case "2":
+                            CreateNewUser();
+                            break;
+                        case "100":
+                            isRunning = false;
+                            break;
+                        default:
+                            Console.WriteLine("Foutieve invoer");
+                            Console.ReadKey();
+                            break;
+                    }
                 }
-
                 else
                 {
                     Console.Clear();
-					string[] menuOptions = {
-		                "1: Gebruiker aanpassen",
-		                "2: Gebruiker verwijderen",
-		                "3: Gebruikers ophalen",
-		                "",
-		                "4: Area aanmaken",
-		                "5: Area aanpassen",
-		                "6: Area verwijderen",
-		                "7: Areas ophalen",
-		                "",
-		                "8: Role aanmaken",
-		                "9: Role aanpassen",
-		                "10: Role verwijderen",
-		                "11: Roles ophalen",
-		                "",
-		                "12: Specie + Observation aanmaken",
-		                "13: Observation verwijderen",
-		                "15: Observations ophalen",
-		                "17: Species ophalen",
-                        "",
-                        "18: Game spelen",
-		                "",
-		                "80: Dijkstra Algo",
-		                "",
-		                "99: Uitloggen",
-		                "100: Exit application"
-	                };
+                    Console.WriteLine($"Welcome {loggedInUser.GetName()}");
+                    Console.WriteLine();
 
-					foreach (string option in menuOptions)
-					{
-						Console.WriteLine(option);
-					}
+                    // Options available to all users
+                    Console.WriteLine("12: Specie + Observation aanmaken");
+                    Console.WriteLine("13: Observation verwijderen");
+                    Console.WriteLine("15: Observations ophalen");
+                    Console.WriteLine("17: Species ophalen");
 
-					string input = Console.ReadLine();
+                    // Options restricted to admin users only
+                    if (sqlDAL.CheckUserPermissions(loggedInUser.GetId(), "Admin"))
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Admin Options:");
+                        Console.WriteLine("1: Gebruiker aanpassen");
+                        Console.WriteLine("2: Gebruiker verwijderen");
+                        Console.WriteLine("3: Gebruikers ophalen");
+                        Console.WriteLine("4: Area aanmaken");
+                        Console.WriteLine("5: Area aanpassen");
+                        Console.WriteLine("6: Area verwijderen");
+                        Console.WriteLine("7: Areas ophalen");
+                        Console.WriteLine("8: Role aanmaken");
+                        Console.WriteLine("9: Role aanpassen");
+                        Console.WriteLine("10: Role verwijderen");
+                        Console.WriteLine("11: Roles ophalen");
+                        Console.WriteLine("16: Species verwijderen");
+                        Console.WriteLine("18: Game spelen");
+                        Console.WriteLine("19: Game aanmaken");
+                        Console.WriteLine("20: Game aanpassen");
+                        Console.WriteLine("21: Game verwijderen");
+                        Console.WriteLine("40: User + Role toekennen");
+                    }
 
-					switch (input)
+                    Console.WriteLine("99: Uitloggen");
+                    Console.WriteLine("100: Exit application");
+
+                    string input = Console.ReadLine();
+                    switch (input)
                     {
                         case "1":
                             Console.Clear();
@@ -115,8 +122,8 @@ namespace ConsoleAppBENTExNL
                             Console.WriteLine("Voer uw wachtwoord in");
                             string password = Console.ReadLine();
 
-                            int xpLevel = 10;
-                            int xp = 50;
+                            int xpLevel = 0;
+                            int xp = 0;
 
                             User userToUpdate = new User(id, name, dateofBirth, email, password, xpLevel, xp);
 
@@ -396,7 +403,7 @@ namespace ConsoleAppBENTExNL
                             string descriptionO = Console.ReadLine();
 
                             Observation observationToAdd = new Observation(latO, lonO, imageO, descriptionO, 
-                                FoundSpecies, loggedInUser);
+                            FoundSpecies, loggedInUser);
 
                             // Lijsten vullen met objecten
                             loggedInUser.AddObservartion(observationToAdd);
@@ -483,6 +490,99 @@ namespace ConsoleAppBENTExNL
 
                         case "18":
                             StartGame();
+                            break;
+
+                        case "19":
+                            Console.Clear();
+                            Console.WriteLine("Game aanmaken");
+                            Console.WriteLine();
+                            Console.WriteLine("Voer een game naam op");
+                            string gameName = Console.ReadLine();
+
+                            Game gameToAdd = new Game(gameName);
+                            gameToAdd.CreateGame(gameToAdd);
+
+                            Console.WriteLine($"Game met naam {gameName} is aangemaakt");
+                            break;
+
+                        case "20":
+                            Console.Clear();
+                            Console.WriteLine("Game aanpassen");
+                            Console.WriteLine();
+
+                            foreach (Game g in game.GetGames())
+                            {
+                                Console.WriteLine(g.getId() + " " + g.getName());
+                            }
+
+                            Console.WriteLine("Voer het id in dat je wilt aanpassen");
+                            int gameIdE = int.Parse(Console.ReadLine());
+                            Console.WriteLine("Voer een naam in");
+                            string nameE = Console.ReadLine();
+
+                            Game gameToEdit = new Game(gameIdE, nameE, null);
+
+                            gameToEdit.UpdateGame(gameToEdit);
+
+                            Console.WriteLine($"Game {nameE} is aangepast");
+
+                            break;
+
+                        case "21":
+                            Console.Clear();
+                            Console.WriteLine("Game verwijderen");
+                            Console.WriteLine();
+
+                            // Games ophalen en weergeven die in de database staan
+                            foreach (Game g in game.GetGames())
+                            {
+                                Console.WriteLine(g.getId() + " " + g.getName());
+                            }
+                            Console.WriteLine();
+
+                            Console.WriteLine("Voer het id in van de game die u wilt verwijderen");
+                            int gameId = int.Parse(Console.ReadLine());
+
+                            // Verwijderen van de game op id
+                            game.DeleteGame(gameId);
+
+                            Console.WriteLine($"Game: {game.getName()} is verwijderd");
+
+                            Console.ReadKey();
+                            break;
+
+                        case "40":
+                            Console.Clear();
+                            Console.WriteLine("User + Role toekennen");
+                            Console.WriteLine();
+
+                            // Gebruikers ophalen en weergeven die in de database staan
+                            foreach (User u in user.GetUser())
+                            {
+                                Console.WriteLine(u.GetId() + " " + u.GetName());
+                            }
+
+                            Console.WriteLine();
+                            Console.WriteLine("Voer het id in van de gebruiker die u een rol wilt toekennen");
+                            int userId = int.Parse(Console.ReadLine());
+
+                            // Roles ophalen en weergeven die in de database staan
+                            foreach (Role r in role.GetRoles())
+                            {
+                                Console.WriteLine(r.GetId() + " " + r.GetTypeRole());
+                            }
+                            Console.WriteLine();
+                            Console.WriteLine("Voer het id in van de rol die u wilt toekennen");
+                            int roleId = int.Parse(Console.ReadLine());
+
+                            User FoundUser = user.GetUser().FirstOrDefault(u => u.GetId() == userId);
+                            Role FoundRole = role.GetRoles().FirstOrDefault(r => r.GetId() == roleId);
+
+                            // Toekennen van de rol aan de gebruiker
+                            userRole.AddUserRole(FoundUser, FoundRole);
+
+                            Console.WriteLine($"Rol met id: {roleId} is toegewezen aan gebruiker met id: {userId}");
+                            Console.ReadKey();
                             break;
 
                         case "80":
