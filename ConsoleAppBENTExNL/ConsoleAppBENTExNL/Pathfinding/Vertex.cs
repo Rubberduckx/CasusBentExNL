@@ -18,7 +18,17 @@ namespace ConsoleAppBENTExNL.Pathfinding
 
         public void AddNeighbor(Vertex neighbor, int distance)
         {
-            neighbors.Add(neighbor, distance);
+            neighbors[neighbor] = distance;
+        }
+
+        public void AddTwoWayNeighbor(Vertex neighbor, int distance)
+        {
+            this.neighbors[neighbor] = distance;
+
+            if (!neighbor.neighbors.ContainsKey(this))
+            {
+                neighbor.neighbors[this] = distance;
+            }
         }
 
         public void RemoveNeighbors(Vertex neighbor)
