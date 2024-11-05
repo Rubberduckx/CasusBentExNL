@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConsoleAppBENTExNL.DAL;
+using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,12 @@ namespace ConsoleAppBENTExNL.Models
             routeId = _routeId;
         }
 
-        public void CreateGame(Game game)
+		public Game()
+		{
+
+		}
+
+		public void CreateGame(Game game)
         {
 
         }
@@ -39,14 +45,40 @@ namespace ConsoleAppBENTExNL.Models
 
         }
 
+		public List<Game> GetGames()
+		{
+			SQLDAL sqldal = SQLDAL.GetSingleton();
+			return sqldal.GetGames();
+		}
+
         public void GetQuestions(Question question)
         {
 
         }
 
-        public void PlayGame(Game game)
-        {
+		public void PlayGame()
+		{
+			Console.WriteLine($"Spel {id} is gestart!");
 
-        }
-    }
+			foreach (var question in questions)
+			{
+				Console.WriteLine(question.GetQuestionText()); // Toon de vraag
+				Console.Write("Geef je antwoord: ");
+				string userAnswer = Console.ReadLine(); // Vraag om input van de gebruiker
+
+				// Controleer of het antwoord correct is
+				if (userAnswer.Equals(question.GetCorrectAnswer(), StringComparison.OrdinalIgnoreCase))
+				{
+					Console.WriteLine("Correct! Je hebt toegang tot een nieuw routepunt.");
+					// Hier zou je logica kunnen toevoegen voor toegang tot een nieuw routepunt.
+				}
+				else
+				{
+					Console.WriteLine($"Incorrect! Het juiste antwoord is: {question.GetCorrectAnswer()}");
+				}
+				Console.WriteLine(); // Extra regel voor netheid
+			}
+			Console.WriteLine("Game is afgelopen.");
+		}
+	}
 }

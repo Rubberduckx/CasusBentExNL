@@ -18,7 +18,8 @@ namespace ConsoleAppBENTExNL.DAL
         public string connectionString;
 
         public List<User> users;
-        public List<Role> roles;
+		public List<Game> games;
+		public List<Role> roles;
         public List<Area> areas;
         public List<UserQuest> userQuests;
         public List<Observation> observations;
@@ -54,7 +55,7 @@ namespace ConsoleAppBENTExNL.DAL
             speciesL = new List<Species>();
 
             //connectionString
-            connectionString = "*";
+            connectionString = "Data Source=DESKTOP-FS0T5UA;Initial Catalog=BentCasus;Integrated Security=True;TrustServerCertificate=True";
 
             // Create a new SqlConnection object
             connection = new SqlConnection(connectionString);
@@ -192,7 +193,6 @@ namespace ConsoleAppBENTExNL.DAL
 		public Area GetArea(int id)
 		{
 			connection.Open();
-
 			SqlCommand command = new SqlCommand("SELECT * FROM Area WHERE id = @id", connection);
 			command.Parameters.AddWithValue("@id", id);
 			SqlDataReader reader = command.ExecuteReader();
@@ -526,7 +526,6 @@ namespace ConsoleAppBENTExNL.DAL
 		/*  ==================== Get a single route from the database where id is given id ==================== */
 		public Route GetRoute(int id)
         {
-            connection.Close();
             connection.Open();
 
             SqlCommand command = new SqlCommand("SELECT * FROM Route WHERE id = @id", connection);
@@ -735,9 +734,6 @@ namespace ConsoleAppBENTExNL.DAL
             }
         }
 
-		/*  ==================== Get UserQuest by id ==================== */
-
-
 
 		/*  ==================== Get all Answers from the database ==================== */
 		public List<Answer> GetAnswers()
@@ -852,5 +848,30 @@ namespace ConsoleAppBENTExNL.DAL
 
 			connection.Close();
 		}
+
+
+		/*  ==================== Get all Games from the database ==================== */
+		public List<Game> GetGames()
+		{
+			using (SqlConnection connection = new SqlConnection(connectionString))
+			{
+				connection.Open(); // Verbinding openen
+
+				// SQL-commando om alle spellen op te halen
+				SqlCommand command = new SqlCommand("SELECT * FROM Game", connection);
+				SqlDataReader reader = command.ExecuteReader();
+
+				while (reader.Read())
+				{
+					int id = reader.GetInt32(0);
+					Route route = GetRoute(id); // Veronderstelling: De methode GetRoute haalt een route op die bij het spel hoort
+
+					games.Add(new Game(id, route)); // Voeg het nieuwe spel toe aan de lijst
+				}
+			} // Verbinding wordt automatisch gesloten aan het einde van de using-block
+
+			return games; // Retourneer de lijst met spellen
+		}
+
 	}
 }
