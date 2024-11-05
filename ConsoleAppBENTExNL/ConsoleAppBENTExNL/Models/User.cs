@@ -121,5 +121,10 @@ namespace ConsoleAppBENTExNL.Models
             User user = sqldal.GetUserByUsernameAndPassword(name, password);
             return user != null;
         }
+
+        public void AddObservartion(Observation observation)
+        {
+            observations.Add(observation);
+        }
     }
 }
