@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConsoleAppBENTExNL.DAL;
+using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,24 +20,30 @@ namespace ConsoleAppBENTExNL.Models
             routeId = _routeId;
         }
 
+        public int GetId() => id;
+
         public void CreateGame(Game game)
         {
-
-        }
-
-        public void DeleteGame(Game game)
-        {
-
+            SQLDAL sqlDal = SQLDAL.GetSingleton();
+            sqlDal.CreateGame();
         }
 
         public void UpdateGame(Game game)
         {
-
+            SQLDAL sqlDal = SQLDAL.GetSingleton();
+            sqlDal.UpdateGame();
         }
 
-        public void GetGame(Game game)
+        public void DeleteGame(int id)
         {
+            SQLDAL sqlDal = SQLDAL.GetSingleton();
+            sqlDal.DeleteGame();
+        }
 
+        public List<Game> GetAllGames(Game game)
+        {
+            SQLDAL sqlDal = SQLDAL.GetSingleton();
+            return sqlDal.GetAllGames();
         }
 
         public void GetQuestions(Question question)

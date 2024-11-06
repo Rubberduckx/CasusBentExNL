@@ -21,6 +21,7 @@ namespace ConsoleAppBENTExNL.DAL
         public List<Role> roles;
         public List<Area> areas;
         public UserQuest userQuests;
+        public List<Game> games;
 
         // Deze code implementeert een singleton-patroon voor de SQLDAL-klasse.  
         // De SQLDAL-klasse is verantwoordelijk voor databasebewerkingen met betrekking tot gebruikers,
@@ -47,6 +48,7 @@ namespace ConsoleAppBENTExNL.DAL
             roles = new List<Role>();
             areas = new List<Area>();
             userQuests = new UserQuest();
+            games = new List<Game>();
 
             //connectionString
             connectionString = "*";
@@ -606,5 +608,68 @@ namespace ConsoleAppBENTExNL.DAL
 
         /*  ==================== Get UserQuest by id ==================== */
 
+
+
+        /*  ==================== Create a Game ==================== */
+        public void CreateGame(Game game, int routeId)
+        {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("INSERT INTO [Game] (id, routeId)" +
+                "VALUES (@id, @routeId); ", connection);
+
+            command.Parameters.AddWithValue("@id", game.GetId());
+            command.Parameters.AddWithValue("@routeId", routeId);
+
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+
+
+        /*  ==================== Update a Game in the database ==================== */
+        public void UpdateGame(Game game, int routeId)
+        {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("Update [Game] SET routeId = @routeId WHERE id = @id", connection);
+
+            command.Parameters.AddWithValue("@id", game.GetId());
+            command.Parameters.AddWithValue("@routeId", routeId);
+
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+
+
+        /*  ==================== Delete a Game from the database ==================== */
+        public void DeleteGame(int id)
+        {
+            connection.Open();
+
+            SqlCommand command = new SqlCommand("DELETE * FROM [Game] WHERE id = @id", connection);
+
+            command.Parameters.AddWithValue("@id", id);
+
+            command.ExecuteNonQuery();
+            connection.Close();
+        }
+
+
+        /*  ==================== Get all Games ==================== */
+        public List<Game> GetAllGames(int id)
+        {
+            connection.Open();
+            games.Clear();
+
+            SqlCommand command = new SqlCommand("SELECT * FROM [Game]", connection);
+            SqlDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                Game game = new Game(id, GetRoute(reader.GetInt32[0]))
+            }
+
+            connection.Close();
+        }
     }
 }
