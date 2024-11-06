@@ -56,6 +56,7 @@
     <Compile Include="Models\Species.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserQuest.cs" />
+    <Compile Include="Models\UserRole.cs" />
     <Compile Include="Pathfinding\Dijkstra.cs" />
     <Compile Include="Pathfinding\Graph.cs" />
     <Compile Include="Pathfinding\Vertex.cs" />
@@ -65,5 +66,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
