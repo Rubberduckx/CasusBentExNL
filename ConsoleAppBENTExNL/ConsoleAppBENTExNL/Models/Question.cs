@@ -12,11 +12,11 @@ namespace ConsoleAppBENTExNL.Models
         private int id;
         private string questionText;
         private string questionType;
-        private int gameId;
+        private Game gameId;
         private List<Answer> answers = new List<Answer>();
         private List<UserQuest> userQuests = new List<UserQuest>();
 
-        public Question(int _id, string _questionText, string _questionType, int _gameId)
+        public Question(int _id, string _questionText, string _questionType, Game _gameId)
         {
             id = _id;
             questionText = _questionText;
@@ -27,7 +27,7 @@ namespace ConsoleAppBENTExNL.Models
         public int GetQuestionId() => id;
         public string GetQuestionText() => questionText;
         public string GetQuestionType() => questionType;
-        public int GetGameId() => gameId;
+        public Game GetGameId() => gameId;
 		public string GetCorrectAnswer() => answers[0].GetCorrectAnswer();
 
 		public void CreateQuestion(Question question)

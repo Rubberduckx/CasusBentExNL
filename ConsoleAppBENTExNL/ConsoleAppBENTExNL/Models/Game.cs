@@ -25,7 +25,13 @@ namespace ConsoleAppBENTExNL.Models
 			name = _name;
         }
 
-		public Game(int _id, string _name, Route _routeId)
+		public Game(string _name, Route _routeId)
+        {
+            name = _name;
+            routeId = _routeId;
+        }
+
+        public Game(int _id, string _name, Route _routeId)
 		{
 			id = _id;
             name = _name;
