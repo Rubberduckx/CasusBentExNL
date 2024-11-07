@@ -9,6 +9,9 @@ namespace ConsoleAppBENTExNL.Pathfinding
 {
     internal class Dijkstra
     {
+
+        // HULP GEHAD VAN CHATGPT
+
         /*  ==================== Calculate shortest route between two points ==================== */
         public static Stack<Vertex> ShortestRoute(Graph graph, Vertex startPoint, Vertex endPoint)
         {

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Sql;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -139,6 +140,36 @@ namespace ConsoleAppBENTExNL.Models
             return password.Length >= 8 &&
                    password.Any(char.IsUpper) &&
                    password.Any(char.IsDigit);
+        }
+
+        public string GetSecurePassword()
+        {
+            StringBuilder password = new StringBuilder();
+
+            while (true)
+            {
+                ConsoleKeyInfo key = Console.ReadKey(true);
+
+                if (key.Key == ConsoleKey.Enter)
+                {
+                    Console.WriteLine();
+                    return password.ToString();
+                }
+                else if (key.Key == ConsoleKey.Backspace && password.Length > 0)
+                {
+                    // Verwijder het laatste karakter uit de StringBuilder
+                    password.Remove(password.Length - 1, 1);
+
+                    // Verwijder het laatste karakter uit de console
+                    Console.Write("\b \b");
+                }
+                else
+                {
+                    // Voeg het getypte karakter toe aan de StringBuilder
+                    password.Append(key.KeyChar);
+                    Console.Write("*");
+                }
+            }
         }
     }
 }
