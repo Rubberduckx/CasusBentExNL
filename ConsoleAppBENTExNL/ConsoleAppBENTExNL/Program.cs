@@ -22,6 +22,7 @@ namespace ConsoleAppBENTExNL
             Species species = new Species();
             Game game = new Game();
             UserRole userRole = new UserRole();
+            Route route = new Route();
             User loggedInUser = null;
             Species FoundSpecies = null;
             bool isRunning = true;
@@ -34,6 +35,7 @@ namespace ConsoleAppBENTExNL
                     Console.Clear();
                     Console.WriteLine("1: Inloggen");
                     Console.WriteLine("2: Account aanmaken");
+                    Console.WriteLine();
                     Console.WriteLine("100: Exit application");
                     string input = Console.ReadLine();
 
@@ -62,34 +64,53 @@ namespace ConsoleAppBENTExNL
 
                     // Options available to all users
                     Console.WriteLine("12: Specie + Observation aanmaken");
+                    Console.WriteLine();
                     Console.WriteLine("13: Observation verwijderen");
                     Console.WriteLine("15: Observations ophalen");
+                    Console.WriteLine();
                     Console.WriteLine("17: Species ophalen");
+                    Console.WriteLine();
+                    Console.WriteLine("18: Game spelen");
 
                     // Options restricted to admin users only
                     if (sqlDAL.CheckUserPermissions(loggedInUser.GetId(), "Admin"))
                     {
+                        Console.WriteLine($"Welcome {loggedInUser.GetName()}");
                         Console.Clear();
                         Console.WriteLine("Admin Options:");
+                        Console.WriteLine();
                         Console.WriteLine("1: Gebruiker aanpassen");
                         Console.WriteLine("2: Gebruiker verwijderen");
                         Console.WriteLine("3: Gebruikers ophalen");
+                        Console.WriteLine();
                         Console.WriteLine("4: Area aanmaken");
                         Console.WriteLine("5: Area aanpassen");
                         Console.WriteLine("6: Area verwijderen");
                         Console.WriteLine("7: Areas ophalen");
+                        Console.WriteLine();
                         Console.WriteLine("8: Role aanmaken");
                         Console.WriteLine("9: Role aanpassen");
                         Console.WriteLine("10: Role verwijderen");
                         Console.WriteLine("11: Roles ophalen");
+                        Console.WriteLine();
+                        Console.WriteLine("12: Specie + Observation aanmaken");
+                        Console.WriteLine("13: Observation verwijderen");
+                        Console.WriteLine("15: Observations ophalen");
                         Console.WriteLine("16: Species verwijderen");
+                        Console.WriteLine("17: Species ophalen");
+                        Console.WriteLine();
                         Console.WriteLine("18: Game spelen");
                         Console.WriteLine("19: Game aanmaken");
                         Console.WriteLine("20: Game aanpassen");
                         Console.WriteLine("21: Game verwijderen");
+                        Console.WriteLine("22: Game ophalen");
+                        Console.WriteLine();
+                        Console.WriteLine("23: Route aanmaken");
+                        Console.WriteLine("24: Route verwijderen");
+                        Console.WriteLine("25: Routes ophalen");
                         Console.WriteLine("40: User + Role toekennen");
                     }
-
+                    Console.WriteLine();
                     Console.WriteLine("99: Uitloggen");
                     Console.WriteLine("100: Exit application");
 
@@ -498,8 +519,27 @@ namespace ConsoleAppBENTExNL
                             Console.WriteLine();
                             Console.WriteLine("Voer een game naam op");
                             string gameName = Console.ReadLine();
+                            Console.WriteLine();
+                            Console.WriteLine("Kies een route id voor het koppelen");
+                            Console.WriteLine();
+                            foreach (Route r in route.GetAllRoutes())
+                            {
+                                Console.WriteLine(r.GetId() + " " + r.GetName());
+                            }
 
-                            Game gameToAdd = new Game(gameName);
+                            // De variabele aId wordt geïnitialiseerd als null.
+                            // De gebruiker wordt gevraagd om invoer via de console.
+                            // Als de invoer niet leeg is, wordt de invoer omgezet naar een integer en toegewezen aan aId.
+                            int? rId = null;
+                            string inputUserRoute = Console.ReadLine();
+                            if (!string.IsNullOrEmpty(inputUserRoute))
+                            {
+                                rId = int.Parse(inputUserRoute);
+                            }
+
+                            Route FoundRoute = route.GetAllRoutes().FirstOrDefault(r => r.GetId() == rId);
+
+                            Game gameToAdd = new Game(gameName, FoundRoute);
                             gameToAdd.CreateGame(gameToAdd);
 
                             Console.WriteLine($"Game met naam {gameName} is aangemaakt");
@@ -548,6 +588,82 @@ namespace ConsoleAppBENTExNL
 
                             Console.WriteLine($"Game: {game.getName()} is verwijderd");
 
+                            Console.ReadKey();
+                            break;
+
+                        case "22":
+                            Console.Clear();
+                            Console.WriteLine("Games in de database");
+                            Console.WriteLine();
+
+                            // Games ophalen en weergeven die in de database staan
+                            foreach (Game g in game.GetGames())
+                            {
+                                Console.WriteLine(g.getId() + " " + g.getName());
+                            }
+
+                            Console.ReadLine();
+                            break;
+
+                        case "23":
+                            Console.Clear();
+                            Console.WriteLine("Route aanmaken");
+                            Console.WriteLine();
+                            Console.WriteLine("Geef een naam op");
+                            string nameR = Console.ReadLine();
+
+                            Console.WriteLine("Voer het id in van de area die u wilt toekennen");
+                            Console.WriteLine();
+                            foreach (Area a in area.GetAllAreas())
+                            {
+                                Console.WriteLine(a.GetId() + " " + a.GetName());
+                            }
+
+                            // De variabele aId wordt geïnitialiseerd als null.
+                            // De gebruiker wordt gevraagd om invoer via de console.
+                            // Als de invoer niet leeg is, wordt de invoer omgezet naar een integer en toegewezen aan aId.
+                            int? aId = null;
+                            string inputUser = Console.ReadLine();
+                            if (!string.IsNullOrEmpty(inputUser))
+                            {
+                                aId = int.Parse(inputUser);
+                            }
+
+                            Area FoundArea = area.GetAllAreas().FirstOrDefault(a => a.GetId() == aId);
+                            Route routeToAdd = new Route(nameR, FoundArea);
+
+                            routeToAdd.CreateRoute(routeToAdd);
+                            Console.WriteLine($"Route met naam {routeToAdd.GetName()} is aangemaakt" +
+                                (FoundArea != null ? $", en gekoppeld aan Area: {FoundArea.GetName()}" : ""));
+
+                            Console.ReadLine();
+                            break;
+
+                        case "24":
+                            Console.Clear();
+                            Console.WriteLine("Route aanpassen");
+                            Console.WriteLine();
+                            foreach (Route r in route.GetAllRoutes())
+                            {
+                                Console.WriteLine(r.GetId() + " " + r.GetName());
+                            }
+
+                            Console.WriteLine("Voer het id in dat je wilt verwijderen");
+                            int routeIdtoDelete = int.Parse(Console.ReadLine());
+
+                            route.DeleteRoute(routeIdtoDelete);
+
+                            Console.WriteLine($"Route met Id {routeIdtoDelete} is verwijderd");
+                            Console.ReadKey();
+                            break;
+
+                        case "25":
+                            Console.Clear();
+                            Console.WriteLine("Alle routes in de database");
+                            foreach (Route r in route.GetAllRoutes())
+                            {
+                                Console.WriteLine(r.GetId() + " " + r.GetName());
+                            }
                             Console.ReadKey();
                             break;
 

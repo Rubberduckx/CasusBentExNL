@@ -25,6 +25,7 @@ namespace ConsoleAppBENTExNL.DAL
         public List<Observation> observations;
         public List<Answer> answers;
         public List<Species> speciesL;
+        public List<Route> routes;
 
         // Deze code implementeert een singleton-patroon voor de SQLDAL-klasse.  
         // De SQLDAL-klasse is verantwoordelijk voor databasebewerkingen met betrekking tot gebruikers,
@@ -54,6 +55,7 @@ namespace ConsoleAppBENTExNL.DAL
             observations = new List<Observation>();
             speciesL = new List<Species>();
             games = new List<Game>();
+            routes = new List<Route>();
 
             //connectionString
             connectionString = "*";
@@ -97,214 +99,236 @@ namespace ConsoleAppBENTExNL.DAL
 
         public int GetUserById(int id)
         {
-            connection.Open();
-            SqlCommand command = new SqlCommand("SELECT * FROM [User] WHERE id = @id", connection);
-            command.Parameters.AddWithValue("@id", id);
-            SqlDataReader reader = command.ExecuteReader();
-
-            while (reader.Read())
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                int userId = reader.GetInt32(0);
-                string name = reader.GetString(1);
-                DateTime dateofBirth = reader.GetDateTime(2);
-                string email = reader.GetString(3);
-                string password = reader.GetString(4);
-                int xpLevel = reader.GetInt32(5);
-                int xp = reader.GetInt32(6);
-                int? routeId = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7);
-                Route route = routeId.HasValue ? GetRoute(routeId.Value) : null;
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT * FROM [User] WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                SqlDataReader reader = command.ExecuteReader();
 
-                users.Add(new User(userId, name, dateofBirth, email, password, xpLevel, xp, route));
+                while (reader.Read())
+                {
+                    int userId = reader.GetInt32(0);
+                    string name = reader.GetString(1);
+                    DateTime dateofBirth = reader.GetDateTime(2);
+                    string email = reader.GetString(3);
+                    string password = reader.GetString(4);
+                    int xpLevel = reader.GetInt32(5);
+                    int xp = reader.GetInt32(6);
+                    int? routeId = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7);
+                    Route route = routeId.HasValue ? GetRoute(routeId.Value) : null;
+
+                    users.Add(new User(userId, name, dateofBirth, email, password, xpLevel, xp, route));
+                }
+                connection.Close();
+
+                return id;
             }
-            connection.Close();
-
-            return id;
         }
 
         /*  ==================== Create a user in the database ==================== */
         public void CreateUser(User user)
         {
-            connection.Open();
-            SqlCommand command = new SqlCommand("INSERT INTO [User] (name, dateofBirth, email, password, xlLevel, xp, routeId) " +
-                "VALUES (@name, @dateofBirth, @email, @password, @xplevel, @xp, @routeId)", connection);
-
-            command.Parameters.AddWithValue("@name", user.GetName());
-            command.Parameters.AddWithValue("@dateofBirth", user.GetDateOfBirth());
-            command.Parameters.AddWithValue("@email", user.GetEmail());
-            command.Parameters.AddWithValue("@password", user.GetPassword());
-            command.Parameters.AddWithValue("@xplevel", user.GetXpLevel());
-            command.Parameters.AddWithValue("@xp", user.GetXp());
-            
-            var route = user.GetRoute();
-            if (route != null)
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                command.Parameters.AddWithValue("@routeId", route.GetId());
-            }
-            else
-            {
-                command.Parameters.AddWithValue("@routeId", DBNull.Value);
-            }
-            command.ExecuteNonQuery();
+                connection.Open();
+                SqlCommand command = new SqlCommand("INSERT INTO [User] (name, dateofBirth, email, password, xlLevel, xp, routeId) " +
+                    "VALUES (@name, @dateofBirth, @email, @password, @xplevel, @xp, @routeId)", connection);
 
-            connection.Close();
+                command.Parameters.AddWithValue("@name", user.GetName());
+                command.Parameters.AddWithValue("@dateofBirth", user.GetDateOfBirth());
+                command.Parameters.AddWithValue("@email", user.GetEmail());
+                command.Parameters.AddWithValue("@password", user.GetPassword());
+                command.Parameters.AddWithValue("@xplevel", user.GetXpLevel());
+                command.Parameters.AddWithValue("@xp", user.GetXp());
+
+                var route = user.GetRoute();
+                if (route != null)
+                {
+                    command.Parameters.AddWithValue("@routeId", route.GetId());
+                }
+                else
+                {
+                    command.Parameters.AddWithValue("@routeId", DBNull.Value);
+                }
+                command.ExecuteNonQuery();
+            }
         }
 
 
 		/*  ==================== Update a user in the database ==================== */
 		public void UpdateUser(User user) 
         {
-            connection.Open();
-
-            SqlCommand command = new SqlCommand("UPDATE [User] SET name = @name, dateofBirth = @dateofBirth, " +
-                "email = @email, password = @password, " +
-                "xlLevel = @xplevel, xp = @xp, routeId = @routeId WHERE id = @id", connection);
-
-            command.Parameters.AddWithValue("@id", user.GetId());
-            command.Parameters.AddWithValue("@name", user.GetName());
-            command.Parameters.AddWithValue("@dateofBirth", user.GetDateOfBirth());
-            command.Parameters.AddWithValue("@email", user.GetEmail());
-            command.Parameters.AddWithValue("@password", user.GetPassword());
-            command.Parameters.AddWithValue("@xplevel", user.GetXpLevel());
-            command.Parameters.AddWithValue("@xp", user.GetXp());
-            
-            if (user.GetRoute() != null)
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                command.Parameters.AddWithValue("@routeId", user.GetRoute().GetId());
-            }
-            else
-            {
-                command.Parameters.AddWithValue("@routeId", DBNull.Value);
-            }
+                connection.Open();
 
-            command.ExecuteNonQuery();
-            connection.Close();
+                SqlCommand command = new SqlCommand("UPDATE [User] SET name = @name, dateofBirth = @dateofBirth, " +
+                    "email = @email, password = @password, " +
+                    "xlLevel = @xplevel, xp = @xp, routeId = @routeId WHERE id = @id", connection);
+
+                command.Parameters.AddWithValue("@id", user.GetId());
+                command.Parameters.AddWithValue("@name", user.GetName());
+                command.Parameters.AddWithValue("@dateofBirth", user.GetDateOfBirth());
+                command.Parameters.AddWithValue("@email", user.GetEmail());
+                command.Parameters.AddWithValue("@password", user.GetPassword());
+                command.Parameters.AddWithValue("@xplevel", user.GetXpLevel());
+                command.Parameters.AddWithValue("@xp", user.GetXp());
+
+                if (user.GetRoute() != null)
+                {
+                    command.Parameters.AddWithValue("@routeId", user.GetRoute().GetId());
+                }
+                else
+                {
+                    command.Parameters.AddWithValue("@routeId", DBNull.Value);
+                }
+
+                command.ExecuteNonQuery();
+            }
         }
 
 
 		/*  ==================== Delete a user in the database ==================== */
 		public void DeleteUser(int id)
         {
-            connection.Open();
-            SqlCommand command = new SqlCommand("DELETE FROM [User] WHERE id = @id", connection);
-            command.Parameters.AddWithValue("@id", id);
-            command.ExecuteNonQuery();
-            connection.Close();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("DELETE FROM [User] WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                command.ExecuteNonQuery();
+            }
         }
 
         // NOTE: AREA RELATED METHODS
 		/*  ==================== Get a single area from the database where id is given id ==================== */
-		public Area GetArea(int id)
-		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("SELECT * FROM Area WHERE id = @id", connection);
-			command.Parameters.AddWithValue("@id", id);
-			SqlDataReader reader = command.ExecuteReader();
-			while (reader.Read())
-			{
-				Area area = new Area(id, reader.GetString(1), reader.GetDouble(2), reader.GetDouble(3), reader.GetString(4), 
-                    reader.GetString(4));
-				return area;
-			}
+        public Area GetArea(int id)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT * FROM Area WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    int areaId = reader.GetInt32(0);
+                    string name = reader.GetString(1);
+                    double lat = reader.GetDouble(2);
+                    double lng = reader.GetDouble(3);
+                    string image = reader.GetString(4);
+                    string description = reader.GetString(5);
 
-            connection.Close();
+                    return new Area(areaId, name, lat, lng, image, description);
+                }
 
-            throw new ArgumentException("No Area found at given id.", id.ToString());
-		}
+                throw new ArgumentException("No Area found at given id.", id.ToString());
+            }
+        }
 
         /*  ==================== Get a all areas from the database ==================== */
         public List<Area> GetAllAreas()
         {
-            connection.Open();
-            areas.Clear();
-
-            SqlCommand command = new SqlCommand("SELECT * FROM [Area]", connection);
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                Area area = new Area(reader.GetInt32(0), reader.GetString(1), reader.GetDouble(2), reader.GetDouble(3), 
-                    reader.GetString(4), reader.GetString(5));
+                connection.Open();
+                areas.Clear();
 
-                areas.Add(area);
+                SqlCommand command = new SqlCommand("SELECT * FROM [Area]", connection);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Area area = new Area(reader.GetInt32(0), reader.GetString(1), reader.GetDouble(2), reader.GetDouble(3),
+                        reader.GetString(4), reader.GetString(5));
+
+                    areas.Add(area);
+                }
+
+                return areas;
             }
-
-            connection.Close();
-
-            return areas;
         }
 
 
         /*  ==================== Create a area in the database ==================== */
         public void CreateArea(Area area)
         {
-            connection.Open();
-            SqlCommand command = new SqlCommand("INSERT INTO Area (name, lat, long, image, description) VALUES " +
-                "(@name, @lat, @long, @image, @description)", connection);
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("INSERT INTO Area (name, lat, long, image, description) VALUES " +
+                    "(@name, @lat, @long, @image, @description)", connection);
 
-            command.Parameters.AddWithValue("@name", area.GetName());
-            command.Parameters.AddWithValue("@lat", area.GetLat());
-            command.Parameters.AddWithValue("@long", area.GetLng());
-            command.Parameters.AddWithValue("@image", area.GetImage());
-            command.Parameters.AddWithValue("@description", area.GetDescription());
+                command.Parameters.AddWithValue("@name", area.GetName());
+                command.Parameters.AddWithValue("@lat", area.GetLat());
+                command.Parameters.AddWithValue("@long", area.GetLng());
+                command.Parameters.AddWithValue("@image", area.GetImage());
+                command.Parameters.AddWithValue("@description", area.GetDescription());
 
-            command.ExecuteNonQuery();
-
-            connection.Close();
+                command.ExecuteNonQuery();
+            }
         }
 
 
 		/*  ==================== Delete a area in the database ==================== */
 		public void DeleteArea(int id)
 		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("DELETE FROM [Area] WHERE id = @id", connection);
-			command.Parameters.AddWithValue("@id", id);
-			command.ExecuteNonQuery();
-			connection.Close();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("DELETE FROM [Area] WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                command.ExecuteNonQuery();
+                
+            }
 		}
 
 
 		/*  ==================== Update a area in the database ==================== */
 		public void UpdateArea(Area area)
 		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("Update [Area] SET name = @name, lat = @lat, long = @long, image = @image, description = @description ", connection);
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("Update [Area] SET name = @name, lat = @lat, long = @long, image = @image, description = @description ", connection);
 
-            command.Parameters.AddWithValue("@name", area.GetName());
-            command.Parameters.AddWithValue("@lat", area.GetLat());
-			command.Parameters.AddWithValue("@long", area.GetLng());
-			command.Parameters.AddWithValue("@image", area.GetImage());
-			command.Parameters.AddWithValue("@description", area.GetLat());
+                command.Parameters.AddWithValue("@name", area.GetName());
+                command.Parameters.AddWithValue("@lat", area.GetLat());
+                command.Parameters.AddWithValue("@long", area.GetLng());
+                command.Parameters.AddWithValue("@image", area.GetImage());
+                command.Parameters.AddWithValue("@description", area.GetLat());
 
-			command.ExecuteNonQuery();
-
-			connection.Close();
+                command.ExecuteNonQuery();
+            }
 		}
 
         // NOTE: OBSERVATION RELATED METHODS
 		/*  ==================== Get a single Observation from the database where id is given id ==================== */
 		public Observation GetObservation(int id)
 		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("SELECT * FROM Observation WHERE id = @id", connection);
-			command.Parameters.AddWithValue("@id", id);
-			SqlDataReader reader = command.ExecuteReader();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT * FROM Observation WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                SqlDataReader reader = command.ExecuteReader();
 
-			Observation observation = null;
+                Observation observation = null;
 
-			while (reader.Read())
-			{
-				double lat = reader.GetDouble(1);
-				double lng = reader.GetDouble(2);
-				Species species = GetSpecies(reader.GetInt32(3));
-				User user = GetUser()[reader.GetInt32(4)];
-				Area area = GetArea(reader.GetInt32(5));
-				string image = reader.GetString(6);
-				string description = reader.GetString(7);
-				observation = new Observation(id, lat, lng, species, user, area, image, description);
-			}
-			connection.Close();
+                while (reader.Read())
+                {
+                    double lat = reader.GetDouble(1);
+                    double lng = reader.GetDouble(2);
+                    Species species = GetSpecies(reader.GetInt32(3));
+                    User user = GetUser()[reader.GetInt32(4)];
+                    Area area = GetArea(reader.GetInt32(5));
+                    string image = reader.GetString(6);
+                    string description = reader.GetString(7);
+                    observation = new Observation(id, lat, lng, species, user, area, image, description);
+                }
 
-			return observation;
+                return observation;
+            }
 		}
 
         public List<Observation> GetAllObservations()
@@ -326,10 +350,8 @@ namespace ConsoleAppBENTExNL.DAL
                             string image = reader.GetString(3);
                             string description = reader.GetString(4);
                             Species species = reader.IsDBNull(5) ? null : GetSpecies(reader.GetInt32(5));
-
-                            int userId = reader.GetInt32(6);
-                            User user = GetUser().FirstOrDefault(u => u.GetId() == userId);
-
+                            // Hier nog even na kijken of dat mooier kan
+                            User user = reader.IsDBNull(6) ? null : GetUser().FirstOrDefault(u => u.GetId() == reader.GetInt32(6));
                             Area area = reader.IsDBNull(7) ? null : GetArea(reader.GetInt32(7));
 
                             observations.Add(new Observation(id, lat, lng, image, description, species, user, area));
@@ -347,286 +369,236 @@ namespace ConsoleAppBENTExNL.DAL
 		/*  ==================== Create an Observation in the database ==================== */
 		public void CreateObservation(Observation observation)
 		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("INSERT INTO Observation (lat, long, image, description, specieId, userId, areaId) "
-                + "VALUES (@lat, @long, @image, @description, @specieId, @userId, @areaId);", connection);
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("INSERT INTO Observation (lat, long, image, description, specieId, userId, areaId) "
+                    + "VALUES (@lat, @long, @image, @description, @specieId, @userId, @areaId);", connection);
 
-			command.Parameters.AddWithValue("@lat", observation.GetLat());
-			command.Parameters.AddWithValue("@long", observation.GetLong());
-			command.Parameters.AddWithValue("@image", observation.GetImage());
-			command.Parameters.AddWithValue("@description", observation.GetDescription());
-            command.Parameters.AddWithValue("@specieId", observation.GetSpecieId().GetId());// Specie is verplicht
-            command.Parameters.AddWithValue("@userId", observation.GetUserId().GetId());  // User is verplicht
-            command.Parameters.AddWithValue("@areaId", observation.GetAreaId()?.GetId() ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@lat", observation.GetLat());
+                command.Parameters.AddWithValue("@long", observation.GetLong());
+                command.Parameters.AddWithValue("@image", observation.GetImage());
+                command.Parameters.AddWithValue("@description", observation.GetDescription());
+                command.Parameters.AddWithValue("@specieId", observation.GetSpecieId().GetId());// Specie is verplicht
+                command.Parameters.AddWithValue("@userId", observation.GetUserId().GetId());  // User is verplicht
+                command.Parameters.AddWithValue("@areaId", observation.GetAreaId()?.GetId() ?? (object)DBNull.Value);
 
-            command.ExecuteNonQuery();
-            connection.Close();
+                command.ExecuteNonQuery();
+            }
 		}
 
 
 		/*  ==================== Update an Observation in the database ==================== */
 		public void UpdateObservation(Observation observation)
 		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("UPDATE [Observation] SET lat = @lat, lng = @lng, image = @image, description = @description, " +
-				"specieId = @specieId, userId = @userId, areaId = @areaId WHERE id = @id", connection);
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("UPDATE [Observation] SET lat = @lat, lng = @lng, image = @image, description = @description, " +
+                    "specieId = @specieId, userId = @userId, areaId = @areaId WHERE id = @id", connection);
 
-			command.Parameters.AddWithValue("@id", observation.GetId());
-			command.Parameters.AddWithValue("@lat", observation.GetLat());
-			command.Parameters.AddWithValue("@lng", observation.GetLong());
-			command.Parameters.AddWithValue("@image", observation.GetImage());
-			command.Parameters.AddWithValue("@description", observation.GetDescription());
-			command.Parameters.AddWithValue("@specieId", observation.GetSpecieId().GetId());
-			command.Parameters.AddWithValue("@userId", observation.GetUserId().GetId());
-			command.Parameters.AddWithValue("@areaId", observation.GetAreaId().GetId());
+                command.Parameters.AddWithValue("@id", observation.GetId());
+                command.Parameters.AddWithValue("@lat", observation.GetLat());
+                command.Parameters.AddWithValue("@lng", observation.GetLong());
+                command.Parameters.AddWithValue("@image", observation.GetImage());
+                command.Parameters.AddWithValue("@description", observation.GetDescription());
+                command.Parameters.AddWithValue("@specieId", observation.GetSpecieId().GetId());
+                command.Parameters.AddWithValue("@userId", observation.GetUserId().GetId());
+                command.Parameters.AddWithValue("@areaId", observation.GetAreaId().GetId());
 
-			command.ExecuteNonQuery();
-			connection.Close();
+                command.ExecuteNonQuery();
+            }
+                
 		}
 
 
 		/*  ==================== Delete an Observation from the database ==================== */
 		public void DeleteObservation(int id)
 		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("DELETE FROM [Observation] WHERE id = @id", connection);
-			command.Parameters.AddWithValue("@id", id);
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("DELETE FROM [Observation] WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
 
-			command.ExecuteNonQuery();
-			connection.Close();
+                command.ExecuteNonQuery();
+            }
 		}
 
         // NOTE: SPECIE RELATED METHODS
 		/* ==================== Get a single Species from the database where id is given ==================== */
 		public Species GetSpecies(int id)
 		{
-			connection.Open();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
 
-			SqlCommand command = new SqlCommand("SELECT * FROM Species WHERE id = @id", connection);
-			command.Parameters.AddWithValue("@id", id);
-			SqlDataReader reader = command.ExecuteReader();
+                SqlCommand command = new SqlCommand("SELECT * FROM Species WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                SqlDataReader reader = command.ExecuteReader();
 
-			Species species = null;
+                Species species = null;
 
-			if (reader.Read())
-			{
-				int speciesId = reader.GetInt32(0);
-				string name = reader.GetString(1);
-				string type = reader.GetString(2);
-				string description = reader.GetString(3);
-				int size = reader.GetInt32(4);
+                if (reader.Read())
+                {
+                    int speciesId = reader.GetInt32(0);
+                    string name = reader.GetString(1);
+                    string type = reader.GetString(2);
+                    string description = reader.GetString(3);
+                    int size = reader.GetInt32(4);
 
-				species = new Species(speciesId, name, type, description, size);
-			}
-			connection.Close();
+                    species = new Species(speciesId, name, type, description, size);
+                }
 
-			return species;
+                return species;
+            }
 		}
 
         public List<Species> GetAllSpecies()
         {
-            connection.Open();
-            speciesL.Clear();
-            SqlCommand command = new SqlCommand("SELECT * FROM Species", connection);
-            SqlDataReader reader = command.ExecuteReader();
-
-            while (reader.Read())
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                int speciesId = reader.GetInt32(0);
-                string name = reader.GetString(1);
-                string type = reader.GetString(2);
-                string description = reader.GetString(3);
-                int size = reader.GetInt32(4);
+                connection.Open();
+                speciesL.Clear();
+                SqlCommand command = new SqlCommand("SELECT * FROM Species", connection);
+                SqlDataReader reader = command.ExecuteReader();
 
-                speciesL.Add(new Species(speciesId, name, type, description, size));
+                while (reader.Read())
+                {
+                    int speciesId = reader.GetInt32(0);
+                    string name = reader.GetString(1);
+                    string type = reader.GetString(2);
+                    string description = reader.GetString(3);
+                    int size = reader.GetInt32(4);
+
+                    speciesL.Add(new Species(speciesId, name, type, description, size));
+                }
+
+                return speciesL;
             }
-            connection.Close();
-
-            return speciesL;
         }
 
 
 		/* ==================== Create a Species in the database ==================== */
 		public void CreateSpecies(Species species)
 		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("INSERT INTO Species (name, type, description, size) " +
-				"VALUES (@name, @type, @description, @size)", connection);
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("INSERT INTO Species (name, type, description, size) " +
+                    "VALUES (@name, @type, @description, @size)", connection);
 
-			command.Parameters.AddWithValue("@name", species.GetName());
-			command.Parameters.AddWithValue("@type", species.GetType());
-			command.Parameters.AddWithValue("@description", species.GetDescription());
-			command.Parameters.AddWithValue("@size", species.GetSize());
+                command.Parameters.AddWithValue("@name", species.GetName());
+                command.Parameters.AddWithValue("@type", species.GetType());
+                command.Parameters.AddWithValue("@description", species.GetDescription());
+                command.Parameters.AddWithValue("@size", species.GetSize());
 
-            command.ExecuteNonQuery();
-            connection.Close();
+                command.ExecuteNonQuery();
+            }
+                
 		}
 
 		/* ==================== Update a Species in the database ==================== */
 		public void UpdateSpecies(Species species)
 		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("UPDATE [Species] SET name = @name, type = @type, description = @description, size = @size " +
-				"WHERE id = @id", connection);
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("UPDATE [Species] SET name = @name, type = @type, description = @description, size = @size " +
+                    "WHERE id = @id", connection);
 
-			command.Parameters.AddWithValue("@id", species.GetId());
-			command.Parameters.AddWithValue("@name", species.GetName());
-			command.Parameters.AddWithValue("@type", species.GetType());
-			command.Parameters.AddWithValue("@description", species.GetDescription());
-			command.Parameters.AddWithValue("@size", species.GetSize());
+                command.Parameters.AddWithValue("@id", species.GetId());
+                command.Parameters.AddWithValue("@name", species.GetName());
+                command.Parameters.AddWithValue("@type", species.GetType());
+                command.Parameters.AddWithValue("@description", species.GetDescription());
+                command.Parameters.AddWithValue("@size", species.GetSize());
 
-			command.ExecuteNonQuery();
-			connection.Close();
+                command.ExecuteNonQuery();
+            }
 		}
 
 		/* ==================== Delete a Species from the database ==================== */
 		public void DeleteSpecies(int id)
 		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("DELETE FROM [Species] WHERE id = @id", connection);
-			command.Parameters.AddWithValue("@id", id);
-			command.ExecuteNonQuery();
-			connection.Close();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("DELETE FROM [Species] WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                command.ExecuteNonQuery();
+            }
 		}
 
         // NOTE: POI RELATED METHODS
 		/*  ==================== Get a single POI from the database ==================== */
-		public PointOfInterest GetPOI(int id) {
-            connection.Open();
-
-            SqlCommand command = new SqlCommand("SELECT * FROM POI WHERE id = @id", connection);
-            command.Parameters.AddWithValue("@id", id);
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
+		public PointOfInterest GetPOI(int id)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                PointOfInterest POI = new PointOfInterest(id, reader.GetString(1), reader.GetString(2), reader.GetString(3));
-                return POI;
+                connection.Open();
+
+                SqlCommand command = new SqlCommand("SELECT * FROM POI WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    PointOfInterest POI = new PointOfInterest(id, reader.GetString(1), reader.GetString(2), reader.GetString(3));
+                    return POI;
+                }
+
+                throw new ArgumentException("No PointOfInterest found at given id.", id.ToString());
             }
 
-            connection.Close();
-
-            throw new ArgumentException("No PointOfInterest found at given id.", id.ToString());
         }
 
         // NOTE: ROUTEPOINT RELATED METHODS
 		/*  ==================== Get a single routepoint from the database where id is given id ==================== */
 		public RoutePoint GetRoutePoint(int id)
         {
-            connection.Open();
-
-            SqlCommand command = new SqlCommand("SELECT * FROM RoutePoint WHERE id = @id", connection);
-            command.Parameters.AddWithValue("@id", id);
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                RoutePoint routePoint = new RoutePoint(id, reader.GetString(1), reader.GetFloat(2), reader.GetFloat(3));
-                return routePoint;
+                connection.Open();
+
+                SqlCommand command = new SqlCommand("SELECT * FROM RoutePoint WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    RoutePoint routePoint = new RoutePoint(id, reader.GetString(1), reader.GetFloat(2), reader.GetFloat(3));
+                    return routePoint;
+                }
+
+                
+
+                throw new ArgumentException("No RoutePoint found at given id.", id.ToString());
             }
-
-            connection.Close();
-
-            throw new ArgumentException("No RoutePoint found at given id.", id.ToString());
         }
 
-        // NOTE: ROUTE RELATED METHODS
-		/*  ==================== Get a single route from the database where id is given id ==================== */
-		public Route GetRoute(int id)
-        {
-            connection.Open();
-
-            SqlCommand command = new SqlCommand("SELECT * FROM Route WHERE id = @id", connection);
-            command.Parameters.AddWithValue("@id", id);
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                Area area = GetArea(reader.GetInt32(2));
-                Route route = new Route(id, reader.GetString(1), area);
-                return route;
-            }
-
-            connection.Close();
-
-            throw new ArgumentException("No Route found at given id.", id.ToString());
-        }
-
-        /*  ==================== Get all routes frm the database ==================== */
-        public List<Route> GetAllRoutes(int id)
-        {
-            List<Route> routes = new List<Route>();
-            connection.Open();
-
-            SqlCommand command = new SqlCommand("SELECT * FROM Route", connection);
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                Area area = GetArea(reader.GetInt32(2));
-                Route route = new Route(id, reader.GetString(1), area);
-                routes.Add(route);
-            }
-            connection.Close();
-            return routes;
-        }
-
-        /* ==================== Create a Route in the database ==================== */
-        public void CreateRoute(string name, int areaId)
-        {
-            connection.Open();
-
-            SqlCommand command = new SqlCommand("INSERT INTO Route (name, areaId) VALUES (@name, @areaId); SELECT SCOPE_IDENTITY();", connection);
-            command.Parameters.AddWithValue("@name", name);
-            command.Parameters.AddWithValue("@areaId", areaId);
-
-            int newId = Convert.ToInt32(command.ExecuteScalar());
-            connection.Close();
-        }
-
-        /* ==================== Update a Route in the database ==================== */
-        public void UpdateRoute(int id, string name, int areaId)
-        {
-            connection.Open();
-
-            SqlCommand command = new SqlCommand("UPDATE Route SET name = @name, areaId = @areaId WHERE id = @id", connection);
-            command.Parameters.AddWithValue("@id", id);
-            command.Parameters.AddWithValue("@name", name);
-            command.Parameters.AddWithValue("@areaId", areaId);
-
-            command.ExecuteNonQuery();
-            connection.Close();
-
-        }
-
-        /* ==================== Delete a Route from the database ==================== */
-        public void DeleteRoute(int id)
-        {
-            connection.Open();
-
-            SqlCommand command = new SqlCommand("DELETE FROM Route WHERE id = @id", connection);
-            command.Parameters.AddWithValue("@id", id);
-
-            command.ExecuteNonQuery();
-            connection.Close();
-        }
         // NOTE: ROLE RELATED METHODS
         /*  ==================== Get all roles from the database ==================== */
         public List<Role> GetAllRoles()
         {
-            roles.Clear();
-            connection.Open();
-            SqlCommand command = new SqlCommand("SELECT * FROM Role", connection);
-            SqlDataReader reader = command.ExecuteReader();
-
-            while (reader.Read())
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                int id = reader.GetInt32(0);
-                string type = reader.GetString(1);
-                string description = reader.GetString(2);
-                string permissions = reader.GetString(3);
-                roles.Add(new Role(id, type, description, permissions));
+                roles.Clear();
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT * FROM Role", connection);
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int id = reader.GetInt32(0);
+                    string type = reader.GetString(1);
+                    string description = reader.GetString(2);
+                    string permissions = reader.GetString(3);
+                    roles.Add(new Role(id, type, description, permissions));
+                }
+
+                
+
+                return roles;
             }
-
-            connection.Close();
-
-            return roles;
+                
         }
 
 
@@ -651,7 +623,7 @@ namespace ConsoleAppBENTExNL.DAL
                     role = new Role(id, type, description, permissions);
                 }
             }
-
+         
             return role;
         }
 
@@ -659,62 +631,76 @@ namespace ConsoleAppBENTExNL.DAL
         /*  ==================== Create a role ==================== */
         public void CreateRole(Role role)
         {
-            connection.Open();
-            SqlCommand command = new SqlCommand("INSERT INTO [Role] (type, description, permission) " +
-                "VALUES (@type, @description, @permission)", connection);
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("INSERT INTO [Role] (type, description, permission) " +
+                    "VALUES (@type, @description, @permission)", connection);
 
-            command.Parameters.AddWithValue("@type", role.GetTypeRole());
-            command.Parameters.AddWithValue("@description", role.GetDescription());
-            command.Parameters.AddWithValue("@permission", role.GetPermission());
+                command.Parameters.AddWithValue("@type", role.GetTypeRole());
+                command.Parameters.AddWithValue("@description", role.GetDescription());
+                command.Parameters.AddWithValue("@permission", role.GetPermission());
 
-            command.ExecuteNonQuery();
+                command.ExecuteNonQuery();
 
-            connection.Close();
+            }
+                
         }
 
 
 		/*  ==================== Delete a role ==================== */
 		public void DeleteRole(int id) 
         {
-            connection.Open();
-            SqlCommand command = new SqlCommand("DELETE FROM [Role] WHERE id = @id", connection);
-            command.Parameters.AddWithValue("@id", id);
-            command.ExecuteNonQuery();
-            connection.Close();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("DELETE FROM [Role] WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                command.ExecuteNonQuery();
+            }
         }
 
 
 		/*  ==================== Update a role ==================== */
 		public void UpdateRole(Role role)
         {
-            connection.Open();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
 
-            SqlCommand command = new SqlCommand("UPDATE [Role] SET type = @type, description = @description, " +
-                "permission = @permission WHERE id = @id", connection);
+                SqlCommand command = new SqlCommand("UPDATE [Role] SET type = @type, description = @description, " +
+                    "permission = @permission WHERE id = @id", connection);
 
-            command.Parameters.AddWithValue("@id", role.GetId());
-            command.Parameters.AddWithValue("@type", role.GetTypeRole());
-            command.Parameters.AddWithValue("@description", role.GetDescription());
-            command.Parameters.AddWithValue("@permission", role.GetPermission());
+                command.Parameters.AddWithValue("@id", role.GetId());
+                command.Parameters.AddWithValue("@type", role.GetTypeRole());
+                command.Parameters.AddWithValue("@description", role.GetDescription());
+                command.Parameters.AddWithValue("@permission", role.GetPermission());
 
-            command.ExecuteNonQuery();
-            connection.Close();
+                command.ExecuteNonQuery();
+                
+            }
+                
         }
 
         /*  ==================== Delete a awnser ==================== */
 		public void DeleteAnswer(int id)
 		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("DELETE FROM [Answer] WHERE id = @id", connection);
-			command.Parameters.AddWithValue("@id", id);
-			command.ExecuteNonQuery();
-			connection.Close();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("DELETE FROM [Answer] WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                command.ExecuteNonQuery();
+                
+            }
+                
 		}
 
         // NOTE: LOGIN RELATED METHODS
         public User GetUserByUsernameAndPassword(string name, string password)
         {
-            
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
                 connection.Open();
                 SqlCommand command = new SqlCommand(
                     "SELECT * FROM [User] WHERE name = @name AND Password = @password",
@@ -738,33 +724,38 @@ namespace ConsoleAppBENTExNL.DAL
                             null                    // route
                         );
                     }
-                connection.Close();
 
-                return null;
+                    return null;
                 }
+            }
         }
 
         // FIXME: USERROLE RELATED METHODS
         /*  ==================== AddUserRole ==================== */
         public void AddUserRole(int userId, int roleId)
         {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
             connection.Open();
             SqlCommand command = new SqlCommand("INSERT INTO UserRole (userId, roleId) VALUES (@userId, @roleId)", connection);
             command.Parameters.AddWithValue("@userId", userId);
             command.Parameters.AddWithValue("@roleId", roleId);
             command.ExecuteNonQuery();
-            connection.Close();
+            
+            }
         }
 
         /*  ==================== RemoveUserRole ==================== */
         public void RemoveUserRole(int userId, int roleId)
         {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
             connection.Open();
             SqlCommand command = new SqlCommand("DELETE FROM UserRole WHERE userId = @userId AND roleId = @roleId", connection);
             command.Parameters.AddWithValue("@userId", userId);
             command.Parameters.AddWithValue("@roleId", roleId);
             command.ExecuteNonQuery();
-            connection.Close();
+            }
         }
 
         /*  ==================== GetUserRoles ==================== */
@@ -786,7 +777,6 @@ namespace ConsoleAppBENTExNL.DAL
                     roles.Add(GetRoleById(roleId)); // Fetch each role independently
                 }
             }
-
             return roles;
         }
 
@@ -811,8 +801,10 @@ namespace ConsoleAppBENTExNL.DAL
         /*  ==================== Get all Answers from the database ==================== */
         public List<Answer> GetAnswers()
 		{
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
 			answers.Clear();
-			connection.Open();
+            connection.Open();
 			SqlCommand command = new SqlCommand("SELECT * FROM Answer", connection);
 			SqlDataReader reader = command.ExecuteReader();
 
@@ -827,16 +819,19 @@ namespace ConsoleAppBENTExNL.DAL
 				answers.Add(new Answer(id, correctAnswer, question));
 			}
 
-			connection.Close();
+			
 
 			return answers;
+            }
 		}
 
 
 		/*  ==================== Create a Answer ==================== */
 		public void CreateAnswer(Answer answer)
 		{
-			connection.Open();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+            connection.Open();
 			SqlCommand command = new SqlCommand("INSERT INTO [Answer] (correctAnswer, questionId) " +
 				"VALUES (@correctAnswer, @questionId)", connection);
 
@@ -845,61 +840,76 @@ namespace ConsoleAppBENTExNL.DAL
 
 			command.ExecuteNonQuery();
 
-			connection.Close();
+			
+            }
 		}
 
         //NOTE: QUESTION RELATED METHODS
 		/*  ==================== Get a single question from the database where id is given id ==================== */
 		public Question GetQuestion(int id)
 		{
-			connection.Open();
-
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+            connection.Open();
 			SqlCommand command = new SqlCommand("SELECT * FROM Question WHERE id = @id", connection);
 			command.Parameters.AddWithValue("@id", id);
 			SqlDataReader reader = command.ExecuteReader();
 			while (reader.Read())
 			{
-				Question question = new Question(id, reader.GetString(1), reader.GetString(2), reader.GetInt32(4));
+                int idQ = reader.GetInt32(0);
+                string questionText = reader.GetString(1);
+                string questionType = reader.GetString(2);
+                Game gameId = GetGames()[reader.GetInt32(3)];
+                Question question = new Question(idQ, questionText, questionType, gameId);
 				return question;
 
 			}
-			connection.Close();
+			
 			throw new ArgumentException("No Area found at given id.", id.ToString());
+            }
 		}
 
 
-		/*  ==================== Create a question in the database ==================== */
-		public void CreateQuestion(Question question)
-		{
-			connection.Open();
-			SqlCommand command = new SqlCommand("INSERT INTO Question (questionText, questionType, gameId) VALUES " +
-				"(@questionText, @questionType, @gameId)", connection);
+        /*  ==================== Create a question in the database ==================== */
+        public void CreateQuestion(Question question)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("INSERT INTO Question (questionText, questionType, gameId) VALUES " +
+                    "(@questionText, @questionType, @gameId)", connection);
 
-			command.Parameters.AddWithValue("@questionText", question.GetQuestionText());
-			command.Parameters.AddWithValue("@questionType", question.GetQuestionType());
-			command.Parameters.AddWithValue("@gameId", question.GetGameId());
+                command.Parameters.AddWithValue("@questionText", question.GetQuestionText());
+                command.Parameters.AddWithValue("@questionType", question.GetQuestionType());
+                command.Parameters.AddWithValue("@gameId", question.GetGameId().getId());
 
-			command.ExecuteNonQuery();
+                command.ExecuteNonQuery();
 
-			connection.Close();
-		}
+
+            }
+        }
+		
 
 
 		/*  ==================== Delete a Question in the database ==================== */
 		public void DeleteQuestion(int id)
 		{
-			connection.Open();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+            connection.Open();
 			SqlCommand command = new SqlCommand("DELETE FROM [Question] WHERE id = @id", connection);
 			command.Parameters.AddWithValue("@id", id);
 			command.ExecuteNonQuery();
-			connection.Close();
+            }
 		}
 
 
 		/*  ==================== Update a Question in the database ==================== */
 		public void UpdateQuestion(Question question)
 		{
-			connection.Open();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+            connection.Open();
 			SqlCommand command = new SqlCommand("Update [Question] SET questionText = @questionText, questionType = @questionType, gameId = @gameId ", connection);
 
 			command.Parameters.AddWithValue("@questionText", question.GetQuestionText());
@@ -907,16 +917,17 @@ namespace ConsoleAppBENTExNL.DAL
 			command.Parameters.AddWithValue("@gameId", question.GetGameId());
 
 			command.ExecuteNonQuery();
-
-			connection.Close();
+            }
 		}
 
         // NOTE: GAME RELATED METHODS
 		/*  ==================== Get all Games from the database ==================== */
 		public List<Game> GetGames()
 		{
-            games.Clear();
-            connection.Open(); 
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                games.Clear();
 
 				SqlCommand command = new SqlCommand("SELECT * FROM Game", connection);
 				SqlDataReader reader = command.ExecuteReader();
@@ -930,44 +941,138 @@ namespace ConsoleAppBENTExNL.DAL
 
 					games.Add(new Game(id, name, route));
 				}
-            connection.Close();
 			return games;
+            }
         }
 
         public void CreateGame(Game game) 
         {
-            connection.Open();
-            SqlCommand command = new SqlCommand("INSERT INTO Game (name, routeId) VALUES (@name, @routeId)", connection);
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("INSERT INTO Game (name, routeId) VALUES (@name, @routeId)", connection);
 
-            command.Parameters.AddWithValue("@name", game.getName());
-            command.Parameters.AddWithValue("@routeId", game.getRouteId()?.GetId() ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@name", game.getName());
+                command.Parameters.AddWithValue("@routeId", game.getRouteId()?.GetId() ?? (object)DBNull.Value);
 
-            command.ExecuteNonQuery();
-            connection.Close();
+                command.ExecuteNonQuery();
+            }
         }
 
         public void UpdateGame(Game game)
         {
-            connection.Open();
-            SqlCommand command = new SqlCommand("UPDATE Game SET name = @name, routeId = @routeId WHERE id = @id", connection);
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("UPDATE Game SET name = @name, routeId = @routeId WHERE id = @id", connection);
 
-            command.Parameters.AddWithValue("@id", game.getId());
-            command.Parameters.AddWithValue("@name", game.getName());
-            command.Parameters.AddWithValue("@routeId", game.getRouteId()?.GetId() ?? (object)DBNull.Value);
-            command.ExecuteNonQuery();
-            connection.Close();
+                command.Parameters.AddWithValue("@id", game.getId());
+                command.Parameters.AddWithValue("@name", game.getName());
+                command.Parameters.AddWithValue("@routeId", game.getRouteId()?.GetId() ?? (object)DBNull.Value);
+                command.ExecuteNonQuery();
+            }
         }
 
         public void DeleteGame(int id)
         {
-            connection.Open();
-            SqlCommand command = new SqlCommand("DELETE FROM Game WHERE id = @id", connection);
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("DELETE FROM Game WHERE id = @id", connection);
 
-            command.Parameters.AddWithValue("@id", id);
+                command.Parameters.AddWithValue("@id", id);
 
-            command.ExecuteNonQuery();
-            connection.Close();
+                command.ExecuteNonQuery();
+            }
         }
 
+        // NOTE: ROUTE RELATED METHODS
+
+        public void CreateRoute(Route route)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("INSERT INTO Route (name, areaId) VALUES (@name, @areaId)", connection);
+
+                command.Parameters.AddWithValue("@name", route.GetName());
+                command.Parameters.AddWithValue("@areaId", route.GetAreaId()?.GetId() ?? (object)DBNull.Value);
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public void UpdateRoute(Route route)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("UPDATE Route SET name = @name, areaId = @areaId WHERE id = @id", connection);
+
+                command.Parameters.AddWithValue("@id", route.GetId());
+                command.Parameters.AddWithValue("@name", route.GetName());
+                command.Parameters.AddWithValue("@areaId", route.GetAreaId().GetId());
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public void DeleteRoute(int id)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("DELETE FROM Route WHERE id = @id", connection);
+
+                command.Parameters.AddWithValue("@id", id);
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+        /*  ==================== Get a single route from the database where id is given id ==================== */
+        public Route GetRoute(int id)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT * FROM Route WHERE id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    int areaId = reader.IsDBNull(2) ? 0 : reader.GetInt32(2); // Default to 0 or handle as needed
+                    Area area = areaId > 0 ? GetArea(areaId) : null; // Only call GetArea if areaId is valid
+                    Route route = new Route(id, reader.GetString(1), area);
+                    return route;
+                }
+            }
+            throw new ArgumentException("No Route found at given id.", id.ToString());
+        }
+
+        /*  ==================== Get all routes frm the database ==================== */
+        public List<Route> GetAllRoutes()
+        {
+            List<Route> routes = new List<Route>();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                using (SqlCommand command = new SqlCommand("SELECT * FROM Route", connection))
+                {
+                    connection.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int id = reader.GetInt32(0);
+                            string name = reader.GetString(1);
+                            Area area = reader.IsDBNull(2) ? null : GetArea(reader.GetInt32(2));
+                            Route route = new Route(id, name, area);
+                            routes.Add(route);
+                        }
+                    }
+                }
+                return routes;
+            }
+        }
     }
 }
