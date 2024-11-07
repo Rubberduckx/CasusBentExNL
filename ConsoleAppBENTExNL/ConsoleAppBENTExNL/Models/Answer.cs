@@ -13,6 +13,12 @@ namespace ConsoleAppBENTExNL.Models
         private string correctAnswer;
         private Question questionId;
 
+        public Answer(string _correctAnswer, Question _questionId)
+        {
+            correctAnswer = _correctAnswer;
+            questionId = _questionId;
+        }
+
         public Answer(int _id, string _correctAnswer, Question _questionId)
         {
             id = _id;

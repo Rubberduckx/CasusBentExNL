@@ -19,13 +19,16 @@ namespace ConsoleAppBENTExNL
             Area area = new Area();
             Role role = new Role();
             Observation observation = new Observation();
+            Question question = new Question();
             Species species = new Species();
             Game game = new Game();
             UserRole userRole = new UserRole();
             Route route = new Route();
+
             User loggedInUser = null;
             Species FoundSpecies = null;
             bool isRunning = true;
+
             SQLDAL sqlDAL = SQLDAL.GetSingleton(); // Singleton instance of SQLDAL
 
             while (isRunning)
@@ -59,25 +62,26 @@ namespace ConsoleAppBENTExNL
                 else
                 {
                     Console.Clear();
-                    Console.WriteLine($"Welcome {loggedInUser.GetName()}");
+                    Console.WriteLine($"Welkom {loggedInUser.GetName()}");
                     Console.WriteLine();
 
                     // Options available to all users
                     Console.WriteLine("12: Specie + Observation aanmaken");
                     Console.WriteLine();
-                    Console.WriteLine("13: Observation verwijderen");
-                    Console.WriteLine("15: Observations ophalen");
-                    Console.WriteLine();
                     Console.WriteLine("17: Species ophalen");
                     Console.WriteLine();
                     Console.WriteLine("18: Game spelen");
+                    Console.WriteLine();
+                    Console.WriteLine("54: Observation verwijderen");
+                    Console.WriteLine("55: Aangemaakte observations ophalen");
+                    Console.WriteLine();
+                    Console.WriteLine("80: Dijkstra Algotritme");
 
                     // Options restricted to admin users only
                     if (sqlDAL.CheckUserPermissions(loggedInUser.GetId(), "Admin"))
                     {
-                        Console.WriteLine($"Welcome {loggedInUser.GetName()}");
                         Console.Clear();
-                        Console.WriteLine("Admin Options:");
+                        Console.WriteLine($"Admin user: {loggedInUser.GetName()}");
                         Console.WriteLine();
                         Console.WriteLine("1: Gebruiker aanpassen");
                         Console.WriteLine("2: Gebruiker verwijderen");
@@ -105,11 +109,22 @@ namespace ConsoleAppBENTExNL
                         Console.WriteLine("21: Game verwijderen");
                         Console.WriteLine("22: Game ophalen");
                         Console.WriteLine();
-                        Console.WriteLine("23: Route aanmaken");
-                        Console.WriteLine("24: Route verwijderen");
-                        Console.WriteLine("25: Routes ophalen");
+                        Console.WriteLine("23: Question aanmaken");
+                        Console.WriteLine("24: Question aanpassen");
+                        Console.WriteLine("25: Question verwijderen");
+                        Console.WriteLine("26: Questions ophalen");
+                        Console.WriteLine();
+                        Console.WriteLine("27 Answer aanmaken");
+                        Console.WriteLine("28 Answer verwijderen");
+                        Console.WriteLine();
+                        Console.WriteLine("30: Route aanmaken");
+                        Console.WriteLine("31: Route verwijderen");
+                        Console.WriteLine("32: Routes ophalen");
+                        Console.WriteLine();
                         Console.WriteLine("40: User + Role toekennen");
+                        Console.WriteLine("80: Dijkstra Algotritme");
                     }
+
                     Console.WriteLine();
                     Console.WriteLine("99: Uitloggen");
                     Console.WriteLine("100: Exit application");
@@ -118,6 +133,20 @@ namespace ConsoleAppBENTExNL
                     switch (input)
                     {
                         case "1":
+                            Console.Clear();
+                            Console.WriteLine("Gebruiker aanpassen");
+                            Console.WriteLine();
+
+                            // Wanneer een eindgebruik een verkeerde keuze maakt kan deze zo terug na het keuze menu
+                            Console.WriteLine("0: Terug naar hoofdmenu? druk 0. Druk een andere toets om door te gaan");
+                            string GebruikAanpassenToMain = Console.ReadLine();
+                            
+                            if (GebruikAanpassenToMain == "0")
+                            {
+                                break;
+                            }
+
+                            // Als de toets != 0 is dan gaat de gebruiker verder met het aanpassen van de gebruiker
                             Console.Clear();
                             Console.WriteLine("Gebruiker aanpassen");
                             Console.WriteLine();
@@ -154,6 +183,7 @@ namespace ConsoleAppBENTExNL
                             Console.WriteLine($"Name: {userToUpdate.GetName()}, is succesvol aangepast");
 
                             Console.ReadKey();
+
                             break;
 
                         case "2":
@@ -463,7 +493,7 @@ namespace ConsoleAppBENTExNL
 
                         case "15":
                             Console.Clear();
-                            Console.WriteLine("Observations in de database");
+                            Console.WriteLine("Ophalen aangemaakte observations");
                             Console.WriteLine();
 
                             // Observations ophalen en weergeven die in de database staan
@@ -510,7 +540,55 @@ namespace ConsoleAppBENTExNL
                             break;
 
                         case "18":
-                            StartGame();
+                            Console.Clear();
+                            Console.WriteLine("Game spelen");
+                            Console.WriteLine();
+
+                            // Games ophalen en weergeven die in de database staan
+                            foreach (Game g in game.GetGames())
+                            {
+                                Console.WriteLine(g.getId() + " " + g.getName());
+                            }
+                            Console.WriteLine();
+
+                            Console.WriteLine("Voer het id in van de game die u wilt spelen");
+                            int gameIdToPlay = int.Parse(Console.ReadLine());
+
+                            Game gameToPlay = game.GetGames().FirstOrDefault(g => g.getId() == gameIdToPlay);
+
+                            if (gameToPlay == null)
+                            {
+                                Console.WriteLine("Game niet gevonden.");
+                                Console.ReadKey();
+                                break;
+                            }
+
+                            // Vragen ophalen die bij de game horen
+                            List<Question> questions = question.GetQuestionsByGameId(gameIdToPlay);
+
+                            foreach (Question q in questions)
+                            {
+                                Console.Clear();
+                                Console.WriteLine("Vraag: " + q.GetQuestionText());
+                                string userAnswer = Console.ReadLine();
+
+                                // Controleer of het antwoord correct is
+                                string correctAnswerU = q.GetCorrectAnswerFromDatabase();
+                                // Controleer of het gegeven antwoord van de gebruiker overeenkomt met het correcte antwoord, ongeacht hoofdletters.
+                                if (correctAnswerU.Equals(userAnswer, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    Console.WriteLine("Correct antwoord!");   
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Fout antwoord. Het juiste antwoord is: " + correctAnswerU);
+                                }
+
+                                Console.ReadKey();
+                            }
+
+                            Console.WriteLine("Game voltooid!");
+                            Console.ReadKey();
                             break;
 
                         case "19":
@@ -607,6 +685,94 @@ namespace ConsoleAppBENTExNL
 
                         case "23":
                             Console.Clear();
+                            Console.WriteLine("Question aanmaken");
+                            Console.WriteLine();
+                            Console.WriteLine("Voer een vraag in");
+                            string questionText = Console.ReadLine();
+                            Console.WriteLine("Voer een type in");
+                            string questionType = Console.ReadLine();
+
+                            foreach (Game g in game.GetGames())
+                            {
+                                Console.WriteLine(g.getId() + " " + g.getName());
+                            }
+
+                            Console.WriteLine("Voer een game id in");
+                            int gameIdQ = int.Parse(Console.ReadLine());
+
+                            Game FoundGame = game.GetGames().FirstOrDefault(g => g.getId() == gameIdQ);
+
+                            Question questionToAdd = new Question(questionText, questionType, FoundGame);
+                            questionToAdd.CreateQuestion(questionToAdd);
+
+                            Console.WriteLine($"Question met vraag: {questionToAdd.GetQuestionText()}, is aangemaakt");
+
+                            Console.ReadLine();
+                            break;
+
+                        case "25":
+                            Console.Clear();
+                            Console.WriteLine("Question verwijderen");
+                            Console.WriteLine();
+
+                            // Questions ophalen en weergeven die in de database staan
+                            foreach (Question q in question.GetAllQuestions())
+                            {
+                                Console.WriteLine(q.GetQuestionId() + " " + q.GetQuestionText());
+                            }
+                            Console.WriteLine();
+
+                            Console.WriteLine("Voer het question id in die verwijderd moet worden.");
+                            int questionIdToDelete = Int32.Parse(Console.ReadLine());
+
+                            question.DeleteQuestion(questionIdToDelete);
+                            Console.ReadKey();
+                            break;
+
+
+                        case "26":
+                            Console.Clear();
+                            Console.WriteLine("Questions in de database");
+                            Console.WriteLine();
+
+                            // Questions ophalen en weergeven die in de database staan
+                            foreach (Question q in question.GetAllQuestions())
+                            {
+                                Console.WriteLine("Question id: " + q.GetQuestionId() + " Gekoppeld aan Game:" + q.GetGameId().getName());
+                            }
+
+                            Console.ReadLine();
+                            break;
+
+                        case "27":
+                            Console.Clear();
+                            Console.WriteLine("Answer aanmaken");
+                            Console.WriteLine();
+
+                            foreach (Question q in question.GetAllQuestions())
+                            {
+                                Console.WriteLine(q.GetQuestionId() + " " + q.GetQuestionText());
+                            }
+
+                            Console.WriteLine("Voer een question id in");
+                            int questionIdA = int.Parse(Console.ReadLine());
+
+                            Question FoundQuestion = question.GetAllQuestions().FirstOrDefault(q => q.GetQuestionId() == questionIdA);
+                            Console.WriteLine();
+                            Console.WriteLine("Voer een correct antwoord in");
+                            string correctAnswer = Console.ReadLine();
+
+                            Answer answerToAdd = new Answer(correctAnswer, FoundQuestion);
+                            answerToAdd.CreateAnswer(answerToAdd);
+
+                            Console.WriteLine($"Answer met correct antwoord: {answerToAdd.GetCorrectAnswer()}, is aangemaakt");
+
+                            Console.ReadLine();
+                            break;
+
+
+                        case "30":
+                            Console.Clear();
                             Console.WriteLine("Route aanmaken");
                             Console.WriteLine();
                             Console.WriteLine("Geef een naam op");
@@ -639,7 +805,7 @@ namespace ConsoleAppBENTExNL
                             Console.ReadLine();
                             break;
 
-                        case "24":
+                        case "31":
                             Console.Clear();
                             Console.WriteLine("Route aanpassen");
                             Console.WriteLine();
@@ -657,7 +823,7 @@ namespace ConsoleAppBENTExNL
                             Console.ReadKey();
                             break;
 
-                        case "25":
+                        case "32":
                             Console.Clear();
                             Console.WriteLine("Alle routes in de database");
                             foreach (Route r in route.GetAllRoutes())
@@ -701,6 +867,52 @@ namespace ConsoleAppBENTExNL
                             Console.ReadKey();
                             break;
 
+                        case "54":
+                            Console.Clear();
+                            Console.WriteLine("Observation verwijderen");
+                            Console.WriteLine();
+
+                            var userObservations = observation.GetObservationsByUserId(loggedInUser.GetId());
+                            foreach (Observation o in userObservations)
+                            {
+                                Console.WriteLine("Observation Id: " + o.GetId() + ", Beschrijving: " + o.GetDescription() +
+                                    ", Aangemaakt door: " + o.GetUserId().GetName());
+                            }
+
+                            Console.WriteLine();
+                            Console.WriteLine("Voer het id in van de observation die u wilt verwijderen");
+                            int observationIdD = int.Parse(Console.ReadLine());
+
+                            // Check if the observation belongs to the logged-in user
+                            var observationToDelete = userObservations.FirstOrDefault(o => o.GetId() == observationIdD);
+                            if (observationToDelete != null)
+                            {
+                                // Verwijderen van de observation op id
+                                observation.DeleteObservation(observationIdD);
+                                Console.WriteLine($"Observation: {observationToDelete.GetDescription()} is verwijderd");
+                            }
+                            else
+                            {
+                                Console.WriteLine("U heeft geen rechten om deze observation te verwijderen of deze observation bestaat niet.");
+                            }
+
+                            Console.ReadKey();
+                            break;
+
+                        case "55":
+                            Console.Clear();
+                            Console.WriteLine("Ophalen aangemaakte observations");
+                            Console.WriteLine();
+
+                            foreach (Observation o in observation.GetObservationsByUserId(loggedInUser.GetId()))
+                            {
+                                Console.WriteLine("Observation Id: " + o.GetId() + ", Beschrijving: " + o.GetDescription() + 
+                                    ", Aangemaakt door: " + o.GetUserId().GetName());
+                            }
+
+                            Console.ReadLine();
+                            break;
+
                         case "80":
                             Console.Clear();
                             Dijkstra.ParkTestCase();
@@ -736,31 +948,60 @@ namespace ConsoleAppBENTExNL
 		{
 			User user = new User();
 
-			Console.Clear();
-			Console.WriteLine("Gebruiker aanmaken");
-			Console.WriteLine();
+            Console.Clear();
+            Console.WriteLine("Gebruiker aanmaken");
+            Console.WriteLine();
 
-			// Request a name, birthdate, email and password
-			string name = RequestInput("Voer een naam in");
-			DateTime dateOfBirth = DateTime.Parse(RequestInput("Voer uw geboortedatum in (dd-mm-jjjj)"));
-			string email = RequestInput("Voer uw email in");
-			string passwordU = RequestInput("Voer uw wachtwoord in");
+            // Vraag om de naam
+            string name = RequestInput("Voer een naam in");
 
-			// Standard xp data
-			int xpLevel = 10;
-			int xp = 50;
+            // Vraag om de geboortedatum en controleer of de gebruiker minstens 14 jaar oud is
+            DateTime dateOfBirth = DateTime.MinValue;
+            bool isDateOfBirthValid = false;
+            while (!isDateOfBirthValid)
+            {
+                string dateOfBirthInput = RequestInput("Voer uw geboortedatum in (dd-mm-jjjj)");
+                if (DateTime.TryParse(dateOfBirthInput, out dateOfBirth) && user.IsAgeValid(dateOfBirth))
+                {
+                    isDateOfBirthValid = true;
+                }
+                else
+                {
+                    Console.WriteLine("U moet minstens 14 jaar oud zijn. Probeer het opnieuw.");
+                }
+            }
 
-			// Call CreateUser method and give the userToAdd with it
-			User userToAdd = new User(name, dateOfBirth, email, passwordU, xpLevel, xp);
-			user.CreateUser(userToAdd);
+            string email = RequestInput("Voer uw email in");
 
-			Console.WriteLine($"Naam: {userToAdd.GetName()} is succesvol aangemaakt");
-			Console.ReadKey();
-		}
+            // Vraag om het wachtwoord en valideer
+            string passwordU = "";
+            bool isPasswordValid = false;
+            while (!isPasswordValid)
+            {
+                passwordU = RequestInput("Voer uw wachtwoord in (minstens 8 karakters, één hoofdletter, één cijfer)");
+                if (user.IsPasswordValid(passwordU))
+                {
+                    isPasswordValid = true;
+                }
+                else
+                {
+                    Console.WriteLine("Het wachtwoord voldoet niet aan de eisen. Probeer opnieuw.");
+                }
+            }
+
+            int xpLevel = 0;
+            int xp = 0;
+
+            User userToAdd = new User(name, dateOfBirth, email, passwordU, xpLevel, xp);
+            user.CreateUser(userToAdd);
+
+            Console.WriteLine($"Naam: {userToAdd.GetName()} is succesvol aangemaakt");
+            Console.ReadKey();
+        }
 
 
-		/*  ==================== Method for logging in ==================== */
-		static void LoginUser(ref User loggedInUser)
+        /*  ==================== Method for logging in ==================== */
+        static void LoginUser(ref User loggedInUser)
 		{
 			User user = new User();
 
@@ -802,41 +1043,41 @@ namespace ConsoleAppBENTExNL
 			}
 		}
 
-        static void StartGame()
-        {
+  //      static void StartGame()
+  //      {
 			
-            List<Game> games = new List<Game>();
-            Game game = new Game();
-            games.Clear();
+  //          List<Game> games = new List<Game>();
+  //          Game game = new Game();
+  //          games.Clear();
 
-			while (true)
-			{
-                games = game.GetGames();
-				Console.WriteLine("Kies een spel om te spelen:");
-				for (int i = 0; i < games.Count; i++)
-				{
-					Console.WriteLine($"{i + 1}: Spel {games[i]}");
-				}
-				Console.WriteLine("99: Exit");
-				Console.Write("Voer je keuze in: ");
+		//	while (true)
+		//	{
+  //              games = game.GetGames();
+		//		Console.WriteLine("Kies een spel om te spelen:");
+		//		for (int i = 0; i < games.Count; i++)
+		//		{
+		//			Console.WriteLine($"{i + 1}: Spel {games[i]}");
+		//		}
+		//		Console.WriteLine("99: Exit");
+		//		Console.Write("Voer je keuze in: ");
 
-				string input = Console.ReadLine();
-				if (input == "99") break;
+		//		string input = Console.ReadLine();
+		//		if (input == "99") break;
 
-				int gameChoice;
-				if (int.TryParse(input, out gameChoice) && gameChoice >= 1 && gameChoice <= games.Count)
-				{
-					games[gameChoice - 1].PlayGame(); // Start het gekozen spel
-					Console.WriteLine("Druk op een toets om verder te gaan.");
-					Console.ReadKey();
-				}
-				else
-				{
-					Console.WriteLine("Ongeldige keuze. Probeer het opnieuw.");
-					Console.ReadKey();
-				}
-			}
-		}
+		//		int gameChoice;
+		//		if (int.TryParse(input, out gameChoice) && gameChoice >= 1 && gameChoice <= games.Count)
+		//		{
+		//			games[gameChoice - 1].PlayGame(); // Start het gekozen spel
+		//			Console.WriteLine("Druk op een toets om verder te gaan.");
+		//			Console.ReadKey();
+		//		}
+		//		else
+		//		{
+		//			Console.WriteLine("Ongeldige keuze. Probeer het opnieuw.");
+		//			Console.ReadKey();
+		//		}
+		//	}
+		//}
 
 		public static void DijkstraTest()
         {
