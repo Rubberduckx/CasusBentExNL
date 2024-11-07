@@ -36,6 +36,18 @@ namespace ConsoleAppBENTExNL.Models
         }
 
         public Observation(int id, double lat, double lng, string image, string description,
+            Species specieId, User userId)
+        {
+            this.id = id;
+            this.lat = lat;
+            this.lng = lng;
+            this.image = image;
+            this.description = description;
+            this.specieId = specieId;
+            this.userId = userId;
+        }
+
+        public Observation(int id, double lat, double lng, string image, string description,
              Species specieId, User userId, Area areaId)
         {
 			this.id = id;

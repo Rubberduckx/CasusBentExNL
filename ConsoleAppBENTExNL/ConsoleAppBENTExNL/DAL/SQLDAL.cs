@@ -61,7 +61,7 @@ namespace ConsoleAppBENTExNL.DAL
             routes = new List<Route>();
 
             //connectionString
-            connectionString = "*";
+            connectionString = "**";
 
             // Create a new SqlConnection object
             connection = new SqlConnection(connectionString);
@@ -431,17 +431,17 @@ namespace ConsoleAppBENTExNL.DAL
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                SqlCommand command = new SqlCommand("UPDATE [Observation] SET lat = @lat, lng = @lng, image = @image, description = @description, " +
+                SqlCommand command = new SqlCommand("UPDATE Observation SET lat = @lat, long = @long, image = @image, description = @description, " +
                     "specieId = @specieId, userId = @userId, areaId = @areaId WHERE id = @id", connection);
 
                 command.Parameters.AddWithValue("@id", observation.GetId());
                 command.Parameters.AddWithValue("@lat", observation.GetLat());
-                command.Parameters.AddWithValue("@lng", observation.GetLong());
+                command.Parameters.AddWithValue("@long", observation.GetLong());
                 command.Parameters.AddWithValue("@image", observation.GetImage());
                 command.Parameters.AddWithValue("@description", observation.GetDescription());
                 command.Parameters.AddWithValue("@specieId", observation.GetSpecieId().GetId());
                 command.Parameters.AddWithValue("@userId", observation.GetUserId().GetId());
-                command.Parameters.AddWithValue("@areaId", observation.GetAreaId().GetId());
+                command.Parameters.AddWithValue("@areaId", observation.GetAreaId()?.GetId() ?? (object)DBNull.Value);
 
                 command.ExecuteNonQuery();
             }

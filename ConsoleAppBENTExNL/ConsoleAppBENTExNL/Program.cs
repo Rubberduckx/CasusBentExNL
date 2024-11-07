@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ConsoleAppBENTExNL
@@ -15,6 +16,7 @@ namespace ConsoleAppBENTExNL
     {
         static void Main(string[] args)
         {
+            WelcomeSign welcome = new WelcomeSign();
             User user = new User();
             Area area = new Area();
             Role role = new Role();
@@ -36,6 +38,8 @@ namespace ConsoleAppBENTExNL
                 if (loggedInUser == null)
                 {
                     Console.Clear();
+                    welcome.WelcomeScreen();
+                    Console.WriteLine();
                     Console.WriteLine("1: Inloggen");
                     Console.WriteLine("2: Account aanmaken");
                     Console.WriteLine();
@@ -72,8 +76,9 @@ namespace ConsoleAppBENTExNL
                     Console.WriteLine();
                     Console.WriteLine("18: Game spelen");
                     Console.WriteLine();
-                    Console.WriteLine("54: Observation verwijderen");
-                    Console.WriteLine("55: Aangemaakte observations ophalen");
+                    Console.WriteLine("91: Aangemaakte Observation aanpassen");
+                    Console.WriteLine("54: Aangemaakte Observation verwijderen");
+                    Console.WriteLine("55: Aangemaakte Observations ophalen");
                     Console.WriteLine();
                     Console.WriteLine("80: Dijkstra Algotritme");
 
@@ -99,6 +104,7 @@ namespace ConsoleAppBENTExNL
                         Console.WriteLine();
                         Console.WriteLine("12: Specie + Observation aanmaken");
                         Console.WriteLine("13: Observation verwijderen");
+                        Console.WriteLine("90: Observation aanpassen");
                         Console.WriteLine("15: Observations ophalen");
                         Console.WriteLine("16: Species verwijderen");
                         Console.WriteLine("17: Species ophalen");
@@ -424,16 +430,48 @@ namespace ConsoleAppBENTExNL
                             Console.Clear();
                             Console.WriteLine("Specie aanmaken");
                             Console.WriteLine();
+                            Console.WriteLine("0: Terug naar hoofdmenu? druk 0. Druk een andere toets om door te gaan");
+                            string SpecieAanmakenToMain = Console.ReadLine();
+
+                            if (SpecieAanmakenToMain == "0")
+                            {
+                                break;
+                            }
+                            Console.WriteLine();
+
                             Console.WriteLine("Voer een naam van de Specie in");
                             string nameS = Console.ReadLine();
+                            while (string.IsNullOrWhiteSpace(nameS))
+                            {
+                                Console.WriteLine("Naam is verplicht. Probeer het opnieuw.");
+                                nameS = RequestInput("Voer een naam in");
+                            }
+
                             Console.WriteLine("Voer een type van de Specie in");
                             string typeS = Console.ReadLine();
+                            while (string.IsNullOrWhiteSpace(typeS))
+                            {
+                                Console.WriteLine("type is verplicht. Probeer het opnieuw.");
+                                typeS = RequestInput("Voer een type in");
+                            }
+
                             Console.WriteLine("Voer een beschrijving van de Specie in");
                             string descriptionS = Console.ReadLine();
+                            while (string.IsNullOrWhiteSpace(descriptionS))
+                            {
+                                Console.WriteLine("Beschrijving is verplicht. Probeer het opnieuw.");
+                                descriptionS = RequestInput("Voer een type in");
+                            }
+
                             Console.WriteLine("Voer een grootte (in CM) van de Specie in ");
-                            int sizeS = Int32.Parse(Console.ReadLine());
+                            int sizeS;
+                            while (!int.TryParse(Console.ReadLine(), out sizeS) || sizeS <= 0)
+                            {
+                                Console.WriteLine("Grootte in (CM) is verplicht en moet een positief getal zijn. Probeer het opnieuw.");
+                            }
 
                             Species speciesToAdd = new Species(nameS, typeS, descriptionS, sizeS);
+
                             // Opslaan van object in database
                             speciesToAdd.CreateSpecies(speciesToAdd);
 
@@ -444,21 +482,40 @@ namespace ConsoleAppBENTExNL
 
                             Console.WriteLine("Observation aanmaken");
                             Console.WriteLine();
+
                             Console.WriteLine("Geef een lattitude op:");
-                            double latO = double.Parse(Console.ReadLine());
+                            double latO;
+                            while (!double.TryParse(Console.ReadLine(), out latO))
+                            {
+                                Console.WriteLine("Lattitude is verplicht en moet een geldig getal zijn. Probeer het opnieuw.");
+                            }
+
                             Console.WriteLine("Geef een longitude op:");
-                            double lonO = double.Parse(Console.ReadLine());
+                            double lonO;
+                            while (!double.TryParse(Console.ReadLine(), out lonO))
+                            {
+                                Console.WriteLine("Lattitude is verplicht en moet een geldig getal zijn. Probeer het opnieuw.");
+                            }
+
                             Console.WriteLine("Geef een image op:");
                             string imageO = Console.ReadLine();
+                            while (string.IsNullOrWhiteSpace(imageO))
+                            {
+                                Console.WriteLine("Image is verplicht. Probeer het opnieuw.");
+                                imageO = RequestInput("Voer een image in");
+                            }
+
                             Console.WriteLine("Geef een beschrijving op:");
                             string descriptionO = Console.ReadLine();
+                            while (string.IsNullOrWhiteSpace(descriptionO))
+                            {
+                                Console.WriteLine("Beschrijving is verplicht. Probeer het opnieuw.");
+                                descriptionO = RequestInput("Voer een beschrijving in");
+                            }
+
 
                             Observation observationToAdd = new Observation(latO, lonO, imageO, descriptionO, 
                             FoundSpecies, loggedInUser);
-
-                            // Lijsten vullen met objecten
-                            loggedInUser.AddObservartion(observationToAdd);
-                            FoundSpecies.AddObservation(observationToAdd);
 
                             // Opslaan van object in database
                             observationToAdd.CreateObservation(observationToAdd);
@@ -532,6 +589,16 @@ namespace ConsoleAppBENTExNL
                             Console.Clear();
                             Console.WriteLine("Species in de database");
                             Console.WriteLine();
+
+                            Console.WriteLine("0: Terug naar hoofdmenu? druk 0. Druk een andere toets om door te gaan");
+                            string SpeciesInDatabaseToMain = Console.ReadLine();
+
+                            if (SpeciesInDatabaseToMain == "0")
+                            {
+                                break;
+                            }
+                            Console.WriteLine();
+
                             foreach (Species s in species.GetSpeciesList())
                             {
                                 Console.WriteLine(s.GetId() + " " + s.GetName());
@@ -544,6 +611,15 @@ namespace ConsoleAppBENTExNL
                             Console.WriteLine("Game spelen");
                             Console.WriteLine();
 
+                            Console.WriteLine("0: Terug naar hoofdmenu? druk 0. Druk een andere toets om door te gaan");
+                            string GameSpelenToMain = Console.ReadLine();
+
+                            if (GameSpelenToMain == "0")
+                            {
+                                break;
+                            }
+                            Console.WriteLine();
+
                             // Games ophalen en weergeven die in de database staan
                             foreach (Game g in game.GetGames())
                             {
@@ -553,7 +629,7 @@ namespace ConsoleAppBENTExNL
 
                             Console.WriteLine("Voer het id in van de game die u wilt spelen");
                             int gameIdToPlay = int.Parse(Console.ReadLine());
-
+                           
                             Game gameToPlay = game.GetGames().FirstOrDefault(g => g.getId() == gameIdToPlay);
 
                             if (gameToPlay == null)
@@ -872,6 +948,15 @@ namespace ConsoleAppBENTExNL
                             Console.WriteLine("Observation verwijderen");
                             Console.WriteLine();
 
+                            Console.WriteLine("0: Terug naar hoofdmenu? druk 0. Druk een andere toets om door te gaan");
+                            string ObservationVerwijderenToMain = Console.ReadLine();
+
+                            if (ObservationVerwijderenToMain == "0")
+                            {
+                                break;
+                            }
+                            Console.WriteLine();
+
                             var userObservations = observation.GetObservationsByUserId(loggedInUser.GetId());
                             foreach (Observation o in userObservations)
                             {
@@ -880,15 +965,26 @@ namespace ConsoleAppBENTExNL
                             }
 
                             Console.WriteLine();
+
                             Console.WriteLine("Voer het id in van de observation die u wilt verwijderen");
-                            int observationIdD = int.Parse(Console.ReadLine());
+                            string observationIdD = Console.ReadLine();
+                            while (string.IsNullOrEmpty(observationIdD))
+                            {
+                                Console.WriteLine("Het id mag niet leeg zijn. Voer het id in van de observation die u wilt aanpassen");
+                                observationIdD = Console.ReadLine();
+                            }
+                            int observationIdDToFind = int.Parse(observationIdD);
+
+
+
+
 
                             // Check if the observation belongs to the logged-in user
-                            var observationToDelete = userObservations.FirstOrDefault(o => o.GetId() == observationIdD);
+                            var observationToDelete = userObservations.FirstOrDefault(o => o.GetId() == observationIdDToFind);
                             if (observationToDelete != null)
                             {
                                 // Verwijderen van de observation op id
-                                observation.DeleteObservation(observationIdD);
+                                observation.DeleteObservation(observationIdDToFind);
                                 Console.WriteLine($"Observation: {observationToDelete.GetDescription()} is verwijderd");
                             }
                             else
@@ -904,6 +1000,15 @@ namespace ConsoleAppBENTExNL
                             Console.WriteLine("Ophalen aangemaakte observations");
                             Console.WriteLine();
 
+                            Console.WriteLine("0: Terug naar hoofdmenu? druk 0. Druk een andere toets om door te gaan");
+                            string ObservationOphalenToMain = Console.ReadLine();
+
+                            if (ObservationOphalenToMain == "0")
+                            {
+                                break;
+                            }
+                            Console.WriteLine();
+
                             foreach (Observation o in observation.GetObservationsByUserId(loggedInUser.GetId()))
                             {
                                 Console.WriteLine("Observation Id: " + o.GetId() + ", Beschrijving: " + o.GetDescription() + 
@@ -916,6 +1021,176 @@ namespace ConsoleAppBENTExNL
                         case "80":
                             Console.Clear();
                             Dijkstra.ParkTestCase();
+                            Console.ReadKey();
+                            break;
+
+                        case "90":
+                            Console.WriteLine("Observation aanpassen");
+                            Console.WriteLine();
+
+                            foreach (Observation o in observation.GetAllObservations())
+                            {
+                                Console.WriteLine(o.GetId() + " " + o.GetDescription());
+                            }
+                            Console.WriteLine();
+
+                            Console.WriteLine("Voer het id in van de observation die u wilt aanpassen");
+                            string inputIdO = Console.ReadLine();
+                            while (string.IsNullOrEmpty(inputIdO))
+                            {
+                                Console.WriteLine("Het id mag niet leeg zijn. Voer het id in van de observation die u wilt aanpassen");
+                                inputIdO = Console.ReadLine();
+                            }
+                            int observationIdToUpdate = int.Parse(inputIdO);
+
+                            Console.WriteLine("Geef een lattitude op:");
+                            double latOToUpdate;
+                            while (!double.TryParse(Console.ReadLine(), out latOToUpdate))
+                            {
+                                Console.WriteLine("Lattitude is verplicht en moet een geldig getal zijn. Probeer het opnieuw.");
+                            }
+
+                            Console.WriteLine("Geef een longitude op:");
+                            double lonOToUpdate;
+                            while (!double.TryParse(Console.ReadLine(), out lonOToUpdate))
+                            {
+                                Console.WriteLine("Longttitude is verplicht en moet een geldig getal zijn. Probeer het opnieuw.");
+                            }
+
+                            Console.WriteLine("Geef een image op:");
+                            string imageOToUpdate = Console.ReadLine();
+                            while (string.IsNullOrWhiteSpace(imageOToUpdate))
+                            {
+                                Console.WriteLine("Image is verplicht. Probeer het opnieuw.");
+                                imageO = RequestInput("Voer een image in");
+                            }
+
+                            Console.WriteLine("Geef een beschrijving op:");
+                            string descriptionOToUpdate = Console.ReadLine();
+                            while (string.IsNullOrWhiteSpace(descriptionOToUpdate))
+                            {
+                                Console.WriteLine("Beschrijving is verplicht. Probeer het opnieuw.");
+                                descriptionO = RequestInput("Voer een beschrijving in");
+                            }
+
+                            foreach (Species s in species.GetSpeciesList())
+                            {
+                                Console.WriteLine(s.GetId() + " " + s.GetName());
+                            }
+
+                            Console.WriteLine("Voer het id in van de Specie die u wilt veranderen");
+                            int SpecieIdToUpdate = int.Parse(Console.ReadLine());
+
+                            Species FoundspecieToUpdate = species.GetSpeciesList().FirstOrDefault(s => s.GetId() == SpecieIdToUpdate);
+
+
+                            Observation observationToUpdate = new Observation(observationIdToUpdate, latOToUpdate, lonOToUpdate, imageOToUpdate, descriptionOToUpdate,
+                            FoundspecieToUpdate, loggedInUser);
+
+                            // Update van object in database
+                            observation.UpdateObservation(observationToUpdate);
+
+                            Console.WriteLine($"Observation met id: {observationToUpdate.GetId()}, is succesvol aangepast");
+
+                            Console.ReadKey();
+                            break;
+
+                        case "91":
+                            Console.Clear();
+                            Console.WriteLine("aangemaakte Observation aanpassen");
+                            Console.WriteLine();
+
+                            Console.WriteLine("0: Terug naar hoofdmenu? druk 0. Druk een andere toets om door te gaan");
+                            string ObservationAanpassenToMain = Console.ReadLine();
+
+                            if (ObservationAanpassenToMain == "0")
+                            {
+                                break;
+                            }
+                            Console.WriteLine();
+
+                            // Laat alleen de observaties zien die door de ingelogde gebruiker zijn aangemaakt
+                            var userObservationsUpdate = observation.GetObservationsByUserId(loggedInUser.GetId());
+                            foreach (Observation o in userObservationsUpdate)
+                            {
+                                Console.WriteLine($"Observation Id: {o.GetId()}, Beschrijving: {o.GetDescription()}, Aangemaakt door: {o.GetUserId().GetName()}");
+                            }
+                            Console.WriteLine();
+
+                            Console.WriteLine("Voer het id in van de observation die u wilt aanpassen");
+                            string inputIdOId = Console.ReadLine();
+                            while (string.IsNullOrEmpty(inputIdOId))
+                            {
+                                Console.WriteLine("Het id mag niet leeg zijn. Voer het id in van de observation die u wilt aanpassen");
+                                inputIdOId = Console.ReadLine();
+                            }
+                            int UobservationToUpdate = int.Parse(inputIdOId);
+
+                            // Controleer of de observatie behoort tot de ingelogde gebruiker
+                            var UobservationToUpdateX = userObservationsUpdate.FirstOrDefault(o => o.GetId() == UobservationToUpdate);
+                            if (UobservationToUpdateX != null)
+                            {
+                                Console.WriteLine("Geef een lattitude op:");
+                                double UlatOToUpdate;
+                                while (!double.TryParse(Console.ReadLine(), out UlatOToUpdate))
+                                {
+                                    Console.WriteLine("Lattitude is verplicht en moet een geldig getal zijn. Probeer het opnieuw.");
+                                }
+
+                                Console.WriteLine("Geef een longitude op:");
+                                double UlonOToUpdate;
+                                while (!double.TryParse(Console.ReadLine(), out UlonOToUpdate))
+                                {
+                                    Console.WriteLine("Longttitude is verplicht en moet een geldig getal zijn. Probeer het opnieuw.");
+                                }
+
+                                Console.WriteLine("Geef een image op:");
+                                string UimageOToUpdate = Console.ReadLine();
+                                while (string.IsNullOrWhiteSpace(UimageOToUpdate))
+                                {
+                                    Console.WriteLine("Image is verplicht. Probeer het opnieuw.");
+                                    imageOToUpdate = RequestInput("Voer een image in");
+                                }
+
+                                Console.WriteLine("Geef een beschrijving op:");
+                                string UdescriptionOToUpdate = Console.ReadLine();
+                                while (string.IsNullOrWhiteSpace(UdescriptionOToUpdate))
+                                {
+                                    Console.WriteLine("Beschrijving is verplicht. Probeer het opnieuw.");
+                                    descriptionOToUpdate = RequestInput("Voer een beschrijving in");
+                                }
+
+                                // Haal de geselecteerde soort op
+                                foreach (Species s in species.GetSpeciesList())
+                                {
+                                    Console.WriteLine($"{s.GetId()} {s.GetName()}");
+                                }
+
+                                Console.WriteLine("Voer het id in van de Soort die u wilt veranderen");
+                                int specieIdToUpdate = int.Parse(Console.ReadLine());
+                                Species foundSpecieToUpdate = species.GetSpeciesList().FirstOrDefault(s => s.GetId() == specieIdToUpdate);
+
+                                // Maak een nieuwe observatie-instantie aan met de bijgewerkte gegevens
+                                Observation updatedObservation = new Observation(
+                                    UobservationToUpdateX.GetId(),
+                                    UlatOToUpdate,
+                                    UlonOToUpdate,
+                                    UimageOToUpdate,
+                                    UdescriptionOToUpdate,
+                                    foundSpecieToUpdate,
+                                    loggedInUser
+                                );
+
+                                // Update de observatie in de database
+                                observation.UpdateObservation(updatedObservation);
+
+                                Console.WriteLine($"Observatie met id: {updatedObservation.GetId()} is succesvol aangepast.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("U heeft geen rechten om deze observatie aan te passen of de observatie bestaat niet.");
+                            }
+
                             Console.ReadKey();
                             break;
 
@@ -952,8 +1227,12 @@ namespace ConsoleAppBENTExNL
             Console.WriteLine("Gebruiker aanmaken");
             Console.WriteLine();
 
-            // Vraag om de naam
             string name = RequestInput("Voer een naam in");
+            while (string.IsNullOrWhiteSpace(name))
+            {
+                Console.WriteLine("Naam is verplicht. Probeer het opnieuw.");
+                name = RequestInput("Voer een naam in");
+            }
 
             // Vraag om de geboortedatum en controleer of de gebruiker minstens 14 jaar oud is
             DateTime dateOfBirth = DateTime.MinValue;
@@ -961,6 +1240,11 @@ namespace ConsoleAppBENTExNL
             while (!isDateOfBirthValid)
             {
                 string dateOfBirthInput = RequestInput("Voer uw geboortedatum in (dd-mm-jjjj)");
+                if (string.IsNullOrWhiteSpace(dateOfBirthInput))
+                {
+                    Console.WriteLine("Geboortedatum is verplicht. Probeer het opnieuw.");
+                    continue;
+                }
                 if (DateTime.TryParse(dateOfBirthInput, out dateOfBirth) && user.IsAgeValid(dateOfBirth))
                 {
                     isDateOfBirthValid = true;
@@ -972,6 +1256,11 @@ namespace ConsoleAppBENTExNL
             }
 
             string email = RequestInput("Voer uw email in");
+            while (string.IsNullOrWhiteSpace(email))
+            {
+                Console.WriteLine("Email is verplicht. Probeer het opnieuw.");
+                email = RequestInput("Voer uw email in");
+            }
 
             // Vraag om het wachtwoord en valideer
             string passwordU = "";
@@ -979,6 +1268,11 @@ namespace ConsoleAppBENTExNL
             while (!isPasswordValid)
             {
                 passwordU = RequestInput("Voer uw wachtwoord in (minstens 8 karakters, één hoofdletter, één cijfer)");
+                if (string.IsNullOrWhiteSpace(passwordU))
+                {
+                    Console.WriteLine("Wachtwoord is verplicht. Probeer het opnieuw.");
+                    continue;
+                }
                 if (user.IsPasswordValid(passwordU))
                 {
                     isPasswordValid = true;
@@ -998,88 +1292,62 @@ namespace ConsoleAppBENTExNL
             Console.WriteLine($"Naam: {userToAdd.GetName()} is succesvol aangemaakt");
             Console.ReadKey();
         }
-
-
         /*  ==================== Method for logging in ==================== */
+
         static void LoginUser(ref User loggedInUser)
-		{
-			User user = new User();
+        {
+            User user = new User();
 
-            // Check if user in logged in
-			bool isLoggedIn = false;
+            // Check if user is logged in
+            bool isLoggedIn = false;
 
-			while (!isLoggedIn)
-			{
-				Console.Clear();
-				Console.WriteLine("Inloggen");
-				Console.WriteLine();
+            while (!isLoggedIn)
+            {
+                Console.Clear();
+                Console.WriteLine("Inloggen");
+                Console.WriteLine();
 
+                // Vraag om de username
+                Console.Write("Voer uw gebruikersnaam in: ");
+                string username = Console.ReadLine();
 
-                // Request a username and password
-				string username = RequestInput("Voer uw gebruikersnaam in:");
-				string password = RequestInput("Voer uw wachtwoord in:");
+                // Als de username leeg is vraag opnieuw om een in te vullen
+                while (string.IsNullOrWhiteSpace(username))
+                {
+                    Console.WriteLine("Username is verplicht. Probeer het opnieuw.");
+                    username = RequestInput("Voer uw username in");
+                }
 
-				if (user.ValidateUser(username, password))
-				{
-					// Check if username and password exist in database
-					loggedInUser = user.GetUser().FirstOrDefault(u => u.GetName() == username);
-					if (loggedInUser != null)
-					{
-						Console.WriteLine();
-						Console.WriteLine($"Welkom, {loggedInUser.GetName()}!");
-						Console.WriteLine("Druk op een toets om door te gaan");
-						Console.ReadKey();
+                // Vraag om de gebruik zijn wachtwoord.
+                Console.Write("Voer uw wachtwoord in: ");
+                // Deze methode zorgt ervoor dat het wachtwoord niet zichtbaar is in de console.
+                string password = user.GetSecurePassword();
 
-                        // set logged in to true
-						isLoggedIn = true;
-					}
-				}
-				else
-				{
-					Console.WriteLine("Ongeldige gebruikersnaam of wachtwoord");
-					Console.WriteLine("Druk op een toets om opnieuw te proberen");
-					Console.ReadKey();
-				}
-			}
-		}
+                if (user.ValidateUser(username, password))
+                {
+                    // Check if username and password exist in database
+                    loggedInUser = user.GetUser().FirstOrDefault(u => u.GetName() == username);
+                    if (loggedInUser != null)
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine($"Welkom, {loggedInUser.GetName()}!");
+                        Console.WriteLine("Druk op een toets om door te gaan");
+                        Console.ReadKey();
 
-  //      static void StartGame()
-  //      {
-			
-  //          List<Game> games = new List<Game>();
-  //          Game game = new Game();
-  //          games.Clear();
-
-		//	while (true)
-		//	{
-  //              games = game.GetGames();
-		//		Console.WriteLine("Kies een spel om te spelen:");
-		//		for (int i = 0; i < games.Count; i++)
-		//		{
-		//			Console.WriteLine($"{i + 1}: Spel {games[i]}");
-		//		}
-		//		Console.WriteLine("99: Exit");
-		//		Console.Write("Voer je keuze in: ");
-
-		//		string input = Console.ReadLine();
-		//		if (input == "99") break;
-
-		//		int gameChoice;
-		//		if (int.TryParse(input, out gameChoice) && gameChoice >= 1 && gameChoice <= games.Count)
-		//		{
-		//			games[gameChoice - 1].PlayGame(); // Start het gekozen spel
-		//			Console.WriteLine("Druk op een toets om verder te gaan.");
-		//			Console.ReadKey();
-		//		}
-		//		else
-		//		{
-		//			Console.WriteLine("Ongeldige keuze. Probeer het opnieuw.");
-		//			Console.ReadKey();
-		//		}
-		//	}
-		//}
-
-		public static void DijkstraTest()
+                        // Set logged in to true
+                        isLoggedIn = true;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Ongeldige gebruikersnaam of wachtwoord");
+                    Console.WriteLine("Druk op een toets om opnieuw te proberen");
+                    Console.ReadKey();
+                }
+            }
+        }
+    public static void DijkstraTest()
         {
             Graph graph = new Graph();
             Vertex a = new Vertex("A");
