@@ -23,6 +23,7 @@ namespace ConsoleAppBENTExNL.DAL
         public List<Area> areas;
         public List<UserQuest> userQuests;
         public List<Observation> observations;
+        public List<Question> question;
         public List<Answer> answers;
         public List<Species> speciesL;
         public List<Route> routes;
@@ -53,6 +54,8 @@ namespace ConsoleAppBENTExNL.DAL
             areas = new List<Area>();
             userQuests = new List<UserQuest>();
             observations = new List<Observation>();
+            question = new List<Question>();
+            answers = new List<Answer>();
             speciesL = new List<Species>();
             games = new List<Game>();
             routes = new List<Route>();
@@ -97,33 +100,34 @@ namespace ConsoleAppBENTExNL.DAL
             return users;
         }
 
-        public int GetUserById(int id)
+        public User GetUserById(int id)
         {
+            User user = null;
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                SqlCommand command = new SqlCommand("SELECT * FROM [User] WHERE id = @id", connection);
-                command.Parameters.AddWithValue("@id", id);
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
+                using (SqlCommand command = new SqlCommand("SELECT * FROM [User] WHERE Id = @Id", connection))
                 {
-                    int userId = reader.GetInt32(0);
-                    string name = reader.GetString(1);
-                    DateTime dateofBirth = reader.GetDateTime(2);
-                    string email = reader.GetString(3);
-                    string password = reader.GetString(4);
-                    int xpLevel = reader.GetInt32(5);
-                    int xp = reader.GetInt32(6);
-                    int? routeId = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7);
-                    Route route = routeId.HasValue ? GetRoute(routeId.Value) : null;
+                    command.Parameters.AddWithValue("@Id", id);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            int userId = reader.GetInt32(0);
+                            string name = reader.GetString(1);
+                            DateTime dateOfBirth = reader.GetDateTime(2);
+                            string email = reader.GetString(3);
+                            string password = reader.GetString(4);
+                            int xpLevel = reader.GetInt32(5);
+                            int xp = reader.GetInt32(6);
+                            Route route = reader.IsDBNull(7) ? null : GetRoute(reader.GetInt32(7));
 
-                    users.Add(new User(userId, name, dateofBirth, email, password, xpLevel, xp, route));
+                            user = new User(userId, name, dateOfBirth, email, password, xpLevel, xp, route);
+                        }
+                    }
                 }
-                connection.Close();
-
-                return id;
             }
+            return user;
         }
 
         /*  ==================== Create a user in the database ==================== */
@@ -360,14 +364,47 @@ namespace ConsoleAppBENTExNL.DAL
                 }
                 
             }
-            connection.Close();
+            return observations;
+        }
 
+        public List<Observation> GetObservationsByUserId(int userId)
+        {
+            observations.Clear();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT * FROM Observation WHERE UserId = @UserId", connection))
+                {
+                    // Voeg de parameter toe om de juiste UserId te filteren
+                    command.Parameters.AddWithValue("@UserId", userId);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int id = reader.GetInt32(0);
+                            double lat = reader.GetDouble(1);
+                            double lng = reader.GetDouble(2);
+                            string image = reader.GetString(3);
+                            string description = reader.GetString(4);
+                            Species species = reader.IsDBNull(5) ? null : GetSpecies(reader.GetInt32(5));
+                            //User user = reader.IsDBNull(6) ? null : GetUser().FirstOrDefault(u => u.GetId() == reader.GetInt32(6));
+                            User user = reader.IsDBNull(6) ? null : GetUserById(reader.GetInt32(6));
+                            Area area = reader.IsDBNull(7) ? null : GetArea(reader.GetInt32(7));
+
+                            observations.Add(new Observation(id, lat, lng, image, description, species, user, area));
+                        }
+                    }
+                }
+            }
             return observations;
         }
 
 
-		/*  ==================== Create an Observation in the database ==================== */
-		public void CreateObservation(Observation observation)
+
+        /*  ==================== Create an Observation in the database ==================== */
+        public void CreateObservation(Observation observation)
 		{
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -736,11 +773,11 @@ namespace ConsoleAppBENTExNL.DAL
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-            connection.Open();
-            SqlCommand command = new SqlCommand("INSERT INTO UserRole (userId, roleId) VALUES (@userId, @roleId)", connection);
-            command.Parameters.AddWithValue("@userId", userId);
-            command.Parameters.AddWithValue("@roleId", roleId);
-            command.ExecuteNonQuery();
+                connection.Open();
+                SqlCommand command = new SqlCommand("INSERT INTO UserRole (userId, roleId) VALUES (@userId, @roleId)", connection);
+                command.Parameters.AddWithValue("@userId", userId);
+                command.Parameters.AddWithValue("@roleId", roleId);
+                command.ExecuteNonQuery();
             
             }
         }
@@ -750,11 +787,11 @@ namespace ConsoleAppBENTExNL.DAL
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-            connection.Open();
-            SqlCommand command = new SqlCommand("DELETE FROM UserRole WHERE userId = @userId AND roleId = @roleId", connection);
-            command.Parameters.AddWithValue("@userId", userId);
-            command.Parameters.AddWithValue("@roleId", roleId);
-            command.ExecuteNonQuery();
+                connection.Open();
+                SqlCommand command = new SqlCommand("DELETE FROM UserRole WHERE userId = @userId AND roleId = @roleId", connection);
+                command.Parameters.AddWithValue("@userId", userId);
+                command.Parameters.AddWithValue("@roleId", roleId);
+                command.ExecuteNonQuery();
             }
         }
 
@@ -803,25 +840,22 @@ namespace ConsoleAppBENTExNL.DAL
 		{
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-			answers.Clear();
-            connection.Open();
-			SqlCommand command = new SqlCommand("SELECT * FROM Answer", connection);
-			SqlDataReader reader = command.ExecuteReader();
+			    answers.Clear();
+                connection.Open();
+			    SqlCommand command = new SqlCommand("SELECT * FROM Answer", connection);
+			    SqlDataReader reader = command.ExecuteReader();
 
-			while (reader.Read())
-			{
-				int id = reader.GetInt32(0);
-				string correctAnswer = reader.GetString(1);
-                int questionId = reader.GetInt32(3);
+			    while (reader.Read())
+			    {
+				    int id = reader.GetInt32(0);
+				    string correctAnswer = reader.GetString(1);
+                    int questionId = reader.GetInt32(3);
 
-                Question question = GetQuestion(questionId);
+                    Question question = GetQuestion(questionId);
 
-				answers.Add(new Answer(id, correctAnswer, question));
-			}
-
-			
-
-			return answers;
+				    answers.Add(new Answer(id, correctAnswer, question));
+			    }
+			    return answers;
             }
 		}
 
@@ -831,16 +865,14 @@ namespace ConsoleAppBENTExNL.DAL
 		{
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-            connection.Open();
-			SqlCommand command = new SqlCommand("INSERT INTO [Answer] (correctAnswer, questionId) " +
-				"VALUES (@correctAnswer, @questionId)", connection);
+                connection.Open();
+			    SqlCommand command = new SqlCommand("INSERT INTO Answer (correctAnswer, questionId) " +
+				    "VALUES (@correctAnswer, @questionId)", connection);
 
-			command.Parameters.AddWithValue("@type", answer.GetType());
-			command.Parameters.AddWithValue("@questionId", answer.GetQuestionId());
+			    command.Parameters.AddWithValue("@correctAnswer", answer.GetCorrectAnswer());
+			    command.Parameters.AddWithValue("@questionId", answer.GetQuestionId().GetQuestionId());
 
-			command.ExecuteNonQuery();
-
-			
+			    command.ExecuteNonQuery();
             }
 		}
 
@@ -850,24 +882,46 @@ namespace ConsoleAppBENTExNL.DAL
 		{
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-            connection.Open();
-			SqlCommand command = new SqlCommand("SELECT * FROM Question WHERE id = @id", connection);
-			command.Parameters.AddWithValue("@id", id);
-			SqlDataReader reader = command.ExecuteReader();
-			while (reader.Read())
-			{
-                int idQ = reader.GetInt32(0);
-                string questionText = reader.GetString(1);
-                string questionType = reader.GetString(2);
-                Game gameId = GetGames()[reader.GetInt32(3)];
-                Question question = new Question(idQ, questionText, questionType, gameId);
-				return question;
+                connection.Open();
+			    SqlCommand command = new SqlCommand("SELECT * FROM Question WHERE id = @id", connection);
+			    command.Parameters.AddWithValue("@id", id);
+			    SqlDataReader reader = command.ExecuteReader();
+			    while (reader.Read())
+			    {
+                    int idQ = reader.GetInt32(0);
+                    string questionText = reader.GetString(1);
+                    string questionType = reader.GetString(2);
+                    Game gameId = GetGames()[reader.GetInt32(3)];
+                    Question question = new Question(idQ, questionText, questionType, gameId);
+				    return question;
 
-			}
+			    }
 			
-			throw new ArgumentException("No Area found at given id.", id.ToString());
+			    throw new ArgumentException("No Area found at given id.", id.ToString());
             }
 		}
+
+        public List<Question> GetAllQuestions() 
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                question.Clear();
+                SqlCommand command = new SqlCommand("SELECT * FROM Question", connection);
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int id = reader.GetInt32(0);
+                    string questionText = reader.GetString(1);
+                    string questionType = reader.GetString(2);
+                    Game gameId = GetGameById(reader.GetInt32(3));
+                    question.Add(new Question(id, questionText, questionType, gameId));
+                }
+
+                return question;
+            }
+        }
 
 
         /*  ==================== Create a question in the database ==================== */
@@ -884,8 +938,6 @@ namespace ConsoleAppBENTExNL.DAL
                 command.Parameters.AddWithValue("@gameId", question.GetGameId().getId());
 
                 command.ExecuteNonQuery();
-
-
             }
         }
 		
@@ -897,7 +949,7 @@ namespace ConsoleAppBENTExNL.DAL
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
             connection.Open();
-			SqlCommand command = new SqlCommand("DELETE FROM [Question] WHERE id = @id", connection);
+			SqlCommand command = new SqlCommand("DELETE FROM Question WHERE id = @id", connection);
 			command.Parameters.AddWithValue("@id", id);
 			command.ExecuteNonQuery();
             }
@@ -910,11 +962,11 @@ namespace ConsoleAppBENTExNL.DAL
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
             connection.Open();
-			SqlCommand command = new SqlCommand("Update [Question] SET questionText = @questionText, questionType = @questionType, gameId = @gameId ", connection);
+			SqlCommand command = new SqlCommand("Update Question SET questionText = @questionText, questionType = @questionType, gameId = @gameId ", connection);
 
 			command.Parameters.AddWithValue("@questionText", question.GetQuestionText());
 			command.Parameters.AddWithValue("@questionType", question.GetQuestionType());
-			command.Parameters.AddWithValue("@gameId", question.GetGameId());
+			command.Parameters.AddWithValue("@gameId", question.GetGameId().getId());
 
 			command.ExecuteNonQuery();
             }
@@ -941,8 +993,34 @@ namespace ConsoleAppBENTExNL.DAL
 
 					games.Add(new Game(id, name, route));
 				}
-			return games;
+			    return games;
             }
+        }
+
+        public Game GetGameById(int id)
+        {
+            Game game = null;
+            string query = "SELECT * FROM Game WHERE Id = @Id";
+
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", id);
+                connection.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        int gameId = reader.GetInt32(reader.GetOrdinal("Id"));
+                        string name = reader.GetString(reader.GetOrdinal("Name"));
+                        int routeId = reader.GetInt32(reader.GetOrdinal("RouteId"));
+                        Route route = GetRoute(routeId);
+
+                        game = new Game(gameId, name, route);
+                    }
+                }
+                connection.Close();
+            }
+            return game;
         }
 
         public void CreateGame(Game game) 
@@ -1074,5 +1152,53 @@ namespace ConsoleAppBENTExNL.DAL
                 return routes;
             }
         }
+        /*  ==================== related to playing the Game ==================== */
+        public List<Question> GetQuestionsByGameId(int gameId)
+        {
+            List<Question> questions = new List<Question>();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string query = "SELECT * FROM Question WHERE GameId = @GameId";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@GameId", gameId);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int id = reader.GetInt32(reader.GetOrdinal("Id"));
+                            string questionText = reader.GetString(reader.GetOrdinal("QuestionText"));
+                            string questionType = reader.GetString(reader.GetOrdinal("QuestionType"));
+                            int gameIdFromDb = reader.GetInt32(reader.GetOrdinal("GameId"));
+
+                            Game game = new Game(gameIdFromDb);
+                            Question question = new Question(id, questionText, questionType, game);
+                            questions.Add(question);
+                        }
+                    }
+                }
+            }
+
+            return questions;
+        }
+        public string GetCorrectAnswerByQuestionId(int questionId)
+        {
+            string correctAnswer = string.Empty;
+            using (SqlConnection connnetion = new SqlConnection(connectionString))
+            {
+                string query = "SELECT CorrectAnswer FROM Answer WHERE QuestionId = @QuestionId";
+                SqlCommand cmd = new SqlCommand(query, connnetion);
+                cmd.Parameters.AddWithValue("@QuestionId", questionId);
+                connnetion.Open();
+                // Voert het SQL-commando uit en haalt de eerste kolom van de eerste rij in de resultaatset op.
+                // Als het resultaat niet null is, wordt het omgezet naar een string.
+                correctAnswer = cmd.ExecuteScalar()?.ToString();
+            }
+            return correctAnswer;
+        }
+
     }
 }

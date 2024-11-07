@@ -126,5 +126,19 @@ namespace ConsoleAppBENTExNL.Models
         {
             observations.Add(observation);
         }
+
+        public bool IsAgeValid(DateTime dateOfBirth)
+        {
+            int age = DateTime.Now.Year - dateOfBirth.Year;
+            if (dateOfBirth > DateTime.Now.AddYears(-age)) age--;
+            return age >= 14;
+        }
+
+        public bool IsPasswordValid(string password)
+        {
+            return password.Length >= 8 &&
+                   password.Any(char.IsUpper) &&
+                   password.Any(char.IsDigit);
+        }
     }
 }

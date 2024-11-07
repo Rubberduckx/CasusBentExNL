@@ -20,10 +20,15 @@ namespace ConsoleAppBENTExNL.Models
 
         }
 
+		public Game(int _id)
+		{
+			id = _id;
+        }
+
 		public Game(string _name)
 		{
 			name = _name;
-        }
+		}
 
 		public Game(string _name, Route _routeId)
         {
@@ -76,30 +81,5 @@ namespace ConsoleAppBENTExNL.Models
         {
 
         }
-
-		public void PlayGame()
-		{
-			Console.WriteLine($"Spel {id} is gestart!");
-
-			foreach (var question in questions)
-			{
-				Console.WriteLine(question.GetQuestionText()); // Toon de vraag
-				Console.Write("Geef je antwoord: ");
-				string userAnswer = Console.ReadLine(); // Vraag om input van de gebruiker
-
-				// Controleer of het antwoord correct is
-				if (userAnswer.Equals(question.GetCorrectAnswer(), StringComparison.OrdinalIgnoreCase))
-				{
-					Console.WriteLine("Correct! Je hebt toegang tot een nieuw routepunt.");
-					// Hier zou je logica kunnen toevoegen voor toegang tot een nieuw routepunt.
-				}
-				else
-				{
-					Console.WriteLine($"Incorrect! Het juiste antwoord is: {question.GetCorrectAnswer()}");
-				}
-				Console.WriteLine(); // Extra regel voor netheid
-			}
-			Console.WriteLine("Game is afgelopen.");
-		}
 	}
 }

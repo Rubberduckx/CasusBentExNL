@@ -16,6 +16,17 @@ namespace ConsoleAppBENTExNL.Models
         private List<Answer> answers = new List<Answer>();
         private List<UserQuest> userQuests = new List<UserQuest>();
 
+        public Question()
+        {
+
+        }
+
+        public Question(string _questionText, string _questionType, Game _gameId)
+        {
+            questionText = _questionText;
+            questionType = _questionType;
+            gameId = _gameId;
+        }
         public Question(int _id, string _questionText, string _questionType, Game _gameId)
         {
             id = _id;
@@ -28,9 +39,8 @@ namespace ConsoleAppBENTExNL.Models
         public string GetQuestionText() => questionText;
         public string GetQuestionType() => questionType;
         public Game GetGameId() => gameId;
-		public string GetCorrectAnswer() => answers[0].GetCorrectAnswer();
 
-		public void CreateQuestion(Question question)
+        public void CreateQuestion(Question question)
         {
 			SQLDAL sqldal = SQLDAL.GetSingleton();
 			sqldal.CreateQuestion(question);
@@ -48,10 +58,27 @@ namespace ConsoleAppBENTExNL.Models
 			sqldal.CreateQuestion(question);
 		}
 
-        public void GetQuestion(Question question)
+        public List<Question> GetAllQuestions()
+        {
+            SQLDAL sqldal = SQLDAL.GetSingleton();
+            return sqldal.GetAllQuestions();
+        }
+            public void GetQuestion(Question question)
         {
 			SQLDAL sqldal = SQLDAL.GetSingleton();
 			sqldal.CreateQuestion(question);
 		}
+
+        public List<Question> GetQuestionsByGameId(int gameId)
+        {
+            SQLDAL sqldal = SQLDAL.GetSingleton();
+            List<Question> questions = sqldal.GetQuestionsByGameId(gameId);
+            return questions;
+        }
+        public string GetCorrectAnswerFromDatabase()
+        {
+            SQLDAL sqldal = SQLDAL.GetSingleton();
+            return sqldal.GetCorrectAnswerByQuestionId(id);
+        }
     }
 }

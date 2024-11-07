@@ -82,6 +82,12 @@ namespace ConsoleAppBENTExNL.Models
             return sqldal.GetAllObservations();
         }
 
+		public List<Observation> GetObservationsByUserId(int userId)
+		{
+			SQLDAL sqldal = SQLDAL.GetSingleton();
+            return sqldal.GetObservationsByUserId(userId);
+        }
+
         public void GetObservation(int id)
 		{
 			SQLDAL sqldal = SQLDAL.GetSingleton();
