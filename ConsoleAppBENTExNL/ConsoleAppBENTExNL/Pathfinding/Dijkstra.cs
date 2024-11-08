@@ -10,7 +10,7 @@ namespace ConsoleAppBENTExNL.Pathfinding
     internal class Dijkstra
     {
 
-        // HULP GEHAD VAN CHATGPT
+        // Gebaseerd op pseudocode Hans en https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
 
         /*  ==================== Calculate shortest route between two points ==================== */
         public static Stack<Vertex> ShortestRoute(Graph graph, Vertex startPoint, Vertex endPoint)
@@ -51,7 +51,7 @@ namespace ConsoleAppBENTExNL.Pathfinding
                     if (queue.Contains(neighbor))
                     {
                         int alt = distance[closest] + closest.GetDistanceToNeighbor(neighbor); //alternative route found, calculating length
-                        if (alt < distance[neighbor])
+                        if (alt < distance[neighbor]) //if alternative route is closer than fastest route
                         {
                             distance[neighbor] = alt; //new fastest route set to alternate route
                             previous[neighbor] = closest;

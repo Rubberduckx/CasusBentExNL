@@ -35,11 +35,7 @@ namespace ConsoleAppBENTExNL.DAL
         // Het singleton-patroon zorgt ervoor dat er slechts één instantie van de SQLDAL-klasse wordt gemaakt en gebruikt
         // in de hele applicatie.  
 
-        // Waarom is dit static?
-        // Graag even uitleggen voor verdeging
         private static readonly SQLDAL _singleton = new SQLDAL();
-        // Waarom is dit static?
-        // Graag even uitleggen voor verdeging
 
 
         public static SQLDAL GetSingleton()
