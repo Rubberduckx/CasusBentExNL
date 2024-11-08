@@ -57,7 +57,7 @@ namespace ConsoleAppBENTExNL.DAL
             routes = new List<Route>();
 
             //connectionString
-            connectionString = "**";
+            connectionString = "*";
 
             // Create a new SqlConnection object
             connection = new SqlConnection(connectionString);
@@ -91,7 +91,6 @@ namespace ConsoleAppBENTExNL.DAL
                 }
                 
             }
-            connection.Close();
 
             return users;
         }
@@ -290,8 +289,10 @@ namespace ConsoleAppBENTExNL.DAL
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                SqlCommand command = new SqlCommand("Update [Area] SET name = @name, lat = @lat, long = @long, image = @image, description = @description ", connection);
+                SqlCommand command = new SqlCommand("Update [Area] SET name = @name, lat = @lat, long = @long, image = @image, " +
+                    "description = @description WHERE id = @id", connection);
 
+                command.Parameters.AddWithValue("@id", area.GetId());
                 command.Parameters.AddWithValue("@name", area.GetName());
                 command.Parameters.AddWithValue("@lat", area.GetLat());
                 command.Parameters.AddWithValue("@long", area.GetLng());
@@ -845,11 +846,9 @@ namespace ConsoleAppBENTExNL.DAL
 			    {
 				    int id = reader.GetInt32(0);
 				    string correctAnswer = reader.GetString(1);
-                    int questionId = reader.GetInt32(3);
+                    Question question = GetQuestion(reader.GetInt32(2));
 
-                    Question question = GetQuestion(questionId);
-
-				    answers.Add(new Answer(id, correctAnswer, question));
+                    answers.Add(new Answer(id, correctAnswer, question));
 			    }
 			    return answers;
             }
@@ -887,7 +886,7 @@ namespace ConsoleAppBENTExNL.DAL
                     int idQ = reader.GetInt32(0);
                     string questionText = reader.GetString(1);
                     string questionType = reader.GetString(2);
-                    Game gameId = GetGames()[reader.GetInt32(3)];
+                    Game gameId = GetGameById(reader.GetInt32(3));
                     Question question = new Question(idQ, questionText, questionType, gameId);
 				    return question;
 
