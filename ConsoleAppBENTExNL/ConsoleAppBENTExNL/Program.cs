@@ -24,6 +24,7 @@ namespace ConsoleAppBENTExNL
             Question question = new Question();
             Species species = new Species();
             Game game = new Game();
+            Answer answer = new Answer();
             UserRole userRole = new UserRole();
             Route route = new Route();
 
@@ -120,8 +121,8 @@ namespace ConsoleAppBENTExNL
                         Console.WriteLine("25: Question verwijderen");
                         Console.WriteLine("26: Questions ophalen");
                         Console.WriteLine();
-                        Console.WriteLine("27 Answer aanmaken");
-                        Console.WriteLine("28 Answer verwijderen");
+                        Console.WriteLine("27: Answer aanmaken");
+                        Console.WriteLine("28: Answer verwijderen");
                         Console.WriteLine();
                         Console.WriteLine("30: Route aanmaken");
                         Console.WriteLine("31: Route verwijderen");
@@ -265,7 +266,7 @@ namespace ConsoleAppBENTExNL
                             // Areas ophalen en weergeven die in de database staan
                             foreach (Area a in area.GetAllAreas())
                             {
-                                Console.WriteLine(a.GetId() + " " + a.GetLat());
+                                Console.WriteLine(a.GetId() + " " + a.GetName());
                             }
                             Console.WriteLine();
 
@@ -697,6 +698,7 @@ namespace ConsoleAppBENTExNL
                             gameToAdd.CreateGame(gameToAdd);
 
                             Console.WriteLine($"Game met naam {gameName} is aangemaakt");
+                            Console.ReadLine();
                             break;
 
                         case "20":
@@ -846,6 +848,29 @@ namespace ConsoleAppBENTExNL
                             Console.ReadLine();
                             break;
 
+                        case "28":
+                            Console.Clear();
+                            Console.WriteLine("Answer verwijderen");
+                            Console.WriteLine();
+
+                            // Games ophalen en weergeven die in de database staan
+                            foreach (Answer a in answer.GetAnswers())
+                            {
+                                Console.WriteLine(a.GetId() + " " + a.GetCorrectAnswer());
+                            }
+                            Console.WriteLine();
+
+                            Console.WriteLine("Voer het id in van de answer die u wilt verwijderen");
+                            int answerIdToDelete = int.Parse(Console.ReadLine());
+
+                            // Verwijderen van de game op id
+                            answer.DeleteAnswer(answerIdToDelete);
+
+                            Console.WriteLine($"Answer: {answerIdToDelete} is verwijderd");
+
+                            Console.ReadKey();
+                            break;
+
 
                         case "30":
                             Console.Clear();
@@ -974,10 +999,6 @@ namespace ConsoleAppBENTExNL
                                 observationIdD = Console.ReadLine();
                             }
                             int observationIdDToFind = int.Parse(observationIdD);
-
-
-
-
 
                             // Check if the observation belongs to the logged-in user
                             var observationToDelete = userObservations.FirstOrDefault(o => o.GetId() == observationIdDToFind);
