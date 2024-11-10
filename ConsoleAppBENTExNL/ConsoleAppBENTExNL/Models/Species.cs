@@ -1,5 +1,6 @@
 ﻿using ConsoleAppBENTExNL.DAL;
 using System;
+using System.Collections.Generic;
 
 namespace ConsoleAppBENTExNL.Models
 {
@@ -10,8 +11,22 @@ namespace ConsoleAppBENTExNL.Models
 		private string type;
 		private string description;
 		private int size;
+		private List<Observation> observations = new List<Observation>();
 
-		public Species(int id, string name, string type, string description, int size)
+		public Species()
+		{
+
+		}
+
+		public Species(string name, string type, string description, int size)
+		{
+			this.name = name;
+            this.type = type;
+            this.description = description;
+            this.size = size;
+        }
+
+        public Species(int id, string name, string type, string description, int size)
 		{
 			this.id = id;
 			this.name = name;
@@ -32,6 +47,12 @@ namespace ConsoleAppBENTExNL.Models
 			sqldal.CreateSpecies(species);
 		}
 
+		public List<Species> GetSpeciesList() 
+		{
+            SQLDAL sqldal = SQLDAL.GetSingleton();
+            return sqldal.GetAllSpecies();
+        }
+
 		public void GetSpecies(int id)
 		{
 			SQLDAL sqldal = SQLDAL.GetSingleton();
@@ -49,5 +70,10 @@ namespace ConsoleAppBENTExNL.Models
 			SQLDAL sqldal = SQLDAL.GetSingleton();
 			sqldal.DeleteSpecies(id);
 		}
-	}
+
+		public void AddObservation(Observation observation)
+        {
+            observations.Add(observation);
+        }
+    }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConsoleAppBENTExNL.DAL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,30 +11,48 @@ namespace ConsoleAppBENTExNL.Models
 	{
 		private int id;
 		private string name;
-		private Area area;
+		private Area areaId;
 		private List<RoutePoint> routePoints;
 		private List<Game> games;
 
-        public Route(int id, string name, Area area)
+        public Route()
+		{
+
+		}
+        public Route(string name, Area areaId)
+        {
+            this.name = name;
+            this.areaId = areaId;
+        }
+
+        public Route(int id, string name, Area areaId)
         {
             this.id = id;
 			this.name = name;
-			this.area = area;
+			this.areaId = areaId;
         }
 
 		public int GetId() => id;
 		public string GetName() => name;
-		public Area GetArea() => area;
+		public Area GetAreaId() => areaId;
 
-        public void CreateRoute()
+		public List<Route> GetAllRoutes()
 		{
-			throw new NotImplementedException();
-		}
+			SQLDAL sqldal = SQLDAL.GetSingleton();
+			return sqldal.GetAllRoutes();
+        }
 
-		public void DeleteRoute()
+        public void CreateRoute(Route route)
 		{
-			throw new NotImplementedException();
-		}
+			SQLDAL sqldal = SQLDAL.GetSingleton();
+            sqldal.CreateRoute(route);
+        }
+
+		public void DeleteRoute(int id)
+		{
+			SQLDAL sqldal = SQLDAL.GetSingleton();
+            sqldal.DeleteRoute(id);
+        }
 
 		public static Route GetRoute(int id)
 		{

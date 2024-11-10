@@ -12,23 +12,55 @@ namespace ConsoleAppBENTExNL.Models
 		private bool isCorrect;
 		private string givenAnswer;
 		private User userId;
-		// private Question questionId;
+		private Question questionId;
 
-		public UserQuest(int _id, bool _isCorrect, string _givenAnswer, User _userId /*, Question _questionId*/)
+		public UserQuest()
+        {
+
+        }
+
+        public UserQuest(int _id, bool _isCorrect, string _givenAnswer, User _userId, Question _questionId)
 		{
 			id = _id;
 			isCorrect = _isCorrect;
 			givenAnswer = _givenAnswer;
 			userId = _userId;
-			//_questionId = questionId
+			questionId = _questionId;
 		}
 
-		public void CreateUserQuest()
+		public int GetId() => id;
+
+		public bool IsCorrect() => isCorrect;
+		public string GetGivenAnswer() => givenAnswer;
+        public User GetUserId() => userId;
+        public Question GetQuestionId() => questionId;
+
+		public List<UserQuest> GetAllUserQuests()
+		{
+			return new List<UserQuest>();
+		}
+
+		public void GetUserQuestById()
 		{
 
 		}
 
-		public void SerCorrectStatus()
+        public void CreateUserQuest()
+		{
+
+		}
+
+		public void UpdateUserQuest()
+        {
+
+        }
+
+        public void DeleteUserQuest()
+		{
+
+		}
+
+        public void SetCorrectStatus()
 		{
 
 		}

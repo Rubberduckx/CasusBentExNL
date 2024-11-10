@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConsoleAppBENTExNL.DAL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,17 @@ namespace ConsoleAppBENTExNL.Models
         private string correctAnswer;
         private Question questionId;
 
+        public Answer()
+        {
+
+        }
+
+        public Answer(string _correctAnswer, Question _questionId)
+        {
+            correctAnswer = _correctAnswer;
+            questionId = _questionId;
+        }
+
         public Answer(int _id, string _correctAnswer, Question _questionId)
         {
             id = _id;
@@ -19,24 +31,26 @@ namespace ConsoleAppBENTExNL.Models
             questionId = _questionId;
         }
 
-        public void CreateAnswer(Answer answer)
+		public int GetId() => id;
+        public string GetCorrectAnswer() => correctAnswer;
+        public Question GetQuestionId() => questionId;
+
+		public void CreateAnswer(Answer answer)
         {
+			SQLDAL sqldal = SQLDAL.GetSingleton();
+			sqldal.CreateAnswer(answer);
+		}
 
-        }
-
-        public void DeleteAnswer(Answer answer)
+        public void DeleteAnswer(int id)
         {
+			SQLDAL sqldal = SQLDAL.GetSingleton();
+			sqldal.DeleteAnswer(id);
+		}
 
-        }
-
-        public void UpdateAnswer(Answer answer)
+		public List<Answer> GetAnswers()
         {
-
-        }
-
-        public void GetAnswer(Answer answer)
-        {
-
-        }
+			SQLDAL sqldal = SQLDAL.GetSingleton();
+			return sqldal.GetAnswers();
+		}
     }
 }
